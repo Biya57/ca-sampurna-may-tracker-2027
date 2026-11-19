@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CA FOUNDATION – SAMPURNA MAY 2027</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM UMD -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel for in-browser JSX compilation -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    html, body, #root { margin: 0; padding: 0; min-height: 100vh; background-color: #0b0b0e; color: #f4f4f5; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    @keyframes viewEnter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-view-enter { animation: viewEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .glow-emerald { box-shadow: 0 0 35px -8px rgba(16, 185, 129, 0.25); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    const IconWrapper = ({ children, className = "w-4 h-4" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+    );
+
+    const LayoutDashboard = (p) => <IconWrapper {...p}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></IconWrapper>;
+    const Calendar = (p) => <IconWrapper {...p}><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></IconWrapper>;
+    const CheckCircle2 = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></IconWrapper>;
+    const BookOpen = (p) => <IconWrapper {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconWrapper>;
+    const RefreshCw = (p) => <IconWrapper {...p}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></IconWrapper>;
+    const Timer = (p) => <IconWrapper {...p}><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></IconWrapper>;
+    const AlertTriangle = (p) => <IconWrapper {...p}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></IconWrapper>;
+    const BarChart3 = (p) => <IconWrapper {...p}><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></IconWrapper>;
+    const Settings = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></IconWrapper>;
+    const ChevronRight = (p) => <IconWrapper {...p}><path d="m9 18 6-6-6-6"/></IconWrapper>;
+    const ChevronLeft = (p) => <IconWrapper {...p}><path d="m15 18-6-6 6-6"/></IconWrapper>;
+    const Plus = (p) => <IconWrapper {...p}><path d="M5 12h14"/><path d="M12 5v14"/></IconWrapper>;
+    const Trash2 = (p) => <IconWrapper {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></IconWrapper>;
+    const Upload = (p) => <IconWrapper {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></IconWrapper>;
+    const Download = (p) => <IconWrapper {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></IconWrapper>;
+    const Award = (p) => <IconWrapper {...p}><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></IconWrapper>;
+    const FolderOpen = (p) => <IconWrapper {...p}><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></IconWrapper>;
+    const CheckSquare = (p) => <IconWrapper {...p}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></IconWrapper>;
+    const Square = (p) => <IconWrapper {...p}><rect width="18" height="18" x="3" y="3" rx="2"/></IconWrapper>;
+    const Sparkles = (p) => <IconWrapper {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></IconWrapper>;
+    const Sun = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></IconWrapper>;
+    const Moon = (p) => <IconWrapper {...p}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></IconWrapper>;
+    const X = (p) => <IconWrapper {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>;
+    const Menu = (p) => <IconWrapper {...p}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></IconWrapper>;
+    const Video = (p) => <IconWrapper {...p}><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></IconWrapper>;
+    const ShieldCheck = (p) => <IconWrapper {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></IconWrapper>;
+    const ShieldAlert = (p) => <IconWrapper {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/></IconWrapper>;
+    const ExternalLink = (p) => <IconWrapper {...p}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></IconWrapper>;
+    const Sliders = (p) => <IconWrapper {...p}><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/></IconWrapper>;
+    const ArrowLeft = (p) => <IconWrapper {...p}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></IconWrapper>;
+    const Save = (p) => <IconWrapper {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></IconWrapper>;
+
+    const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const getTodayISO = () => {
+      try {
+        const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+        const y = parts.find((p) => p.type === 'year')?.value || '2026';
+        const m = parts.find((p) => p.type === 'month')?.value || '11';
+        const d = parts.find((p) => p.type === 'day')?.value || '16';
+        return `${y}-${m}-${d}`;
+      } catch { return '2026-11-16'; }
+    };
+
+    const formatDateDDMMMYYYY = (isoStr) => {
+      if (!isoStr) return '-';
+      if (isoStr === 'Recorded') return 'Recorded';
+      const parts = String(isoStr).split('-');
+      if (parts.length !== 3) return isoStr;
+      const year = parts[0];
+      const monthIdx = parseInt(parts[1], 10) - 1;
+      const day = parts[2];
+      return `${day} ${MONTHS_SHORT[monthIdx] || 'Jan'} ${year}`;
+    };
+
+    const addDaysISO = (isoStr, daysToAdd) => {
+      const base = isoStr && isoStr !== 'Recorded' ? new Date(`${isoStr}T00:00:00Z`) : new Date();
+      base.setUTCDate(base.getUTCDate() + Number(daysToAdd || 0));
+      return base.toISOString().slice(0, 10);
+    };
+
+    const SUBJECTS = [
+      { id: 'accounting', code: 'Paper 1', name: 'Accounting', faculty: 'Recorded + Live Faculty', defaultTiming: 'Live / Recorded' },
+      { id: 'laws', code: 'Paper 2', name: 'Business Laws', faculty: 'Chaitanya Jain Sir', defaultTiming: '8:30am - 10:30am' },
+      { id: 'qa', code: 'Paper 3', name: 'Quantitative Aptitude', faculty: 'Anurag Chauhan Sir', defaultTiming: '6:00pm - 7:30pm' },
+      { id: 'economics', code: 'Paper 4', name: 'Business Economics', faculty: 'Love Kaushik Sir', defaultTiming: '12:00pm - 1:30pm' }
+    ];
+
+    const INITIAL_CHAPTERS = [
+      { id: 'acc-1', subjectId: 'accounting', number: 1, name: 'Accounts: Basics' },
+      { id: 'acc-2', subjectId: 'accounting', number: 2, name: 'Accounting Process' },
+      { id: 'acc-3', subjectId: 'accounting', number: 3, name: 'Depreciation & Amortisation' },
+      { id: 'acc-4', subjectId: 'accounting', number: 4, name: 'Bills of Exchange & Promissory Notes' },
+      { id: 'acc-5', subjectId: 'accounting', number: 5, name: 'Bank Reconciliation Statement (BRS)' },
+      { id: 'acc-6', subjectId: 'accounting', number: 6, name: 'Final Accounts of Sole Proprietors' },
+      { id: 'acc-7', subjectId: 'accounting', number: 7, name: 'Rectification of Errors' },
+      { id: 'acc-8', subjectId: 'accounting', number: 8, name: 'Accounts from Incomplete Records' },
+      { id: 'acc-9', subjectId: 'accounting', number: 9, name: 'Inventories' },
+      { id: 'acc-10', subjectId: 'accounting', number: 10, name: 'Partnership Accounts' },
+      { id: 'acc-11', subjectId: 'accounting', number: 11, name: 'Non-Profit Organisation' },
+      { id: 'acc-12', subjectId: 'accounting', number: 12, name: 'Company Accounts' },
+      { id: 'acc-13', subjectId: 'accounting', number: 13, name: 'Theoretical Framework' },
+      { id: 'law-1', subjectId: 'laws', number: 1, name: 'Introduction of the Subject' },
+      { id: 'law-2', subjectId: 'laws', number: 2, name: 'Indian Regulatory Framework' },
+      { id: 'law-3', subjectId: 'laws', number: 3, name: 'The Indian Partnership Act, 1932' },
+      { id: 'law-4', subjectId: 'laws', number: 4, name: 'The Sale of Good Act, 1930' },
+      { id: 'law-5', subjectId: 'laws', number: 5, name: 'The Companies Act, 2013' },
+      { id: 'law-6', subjectId: 'laws', number: 6, name: 'The Negotiable Instruments Act, 1881' },
+      { id: 'law-7', subjectId: 'laws', number: 7, name: 'The Limited Liability Partnership Act, 2008' },
+      { id: 'law-8', subjectId: 'laws', number: 8, name: 'The Indian Contract Act, 1872' },
+      { id: 'qa-1', subjectId: 'qa', number: 1, name: 'Mathematics of Finance' },
+      { id: 'qa-2', subjectId: 'qa', number: 2, name: 'Ratio and Proportion, Indices, Logarithm' },
+      { id: 'qa-3', subjectId: 'qa', number: 3, name: 'Measures of Central Tendency and Dispersion' },
+      { id: 'qa-4', subjectId: 'qa', number: 4, name: 'Correlation and Regression' },
+      { id: 'qa-5', subjectId: 'qa', number: 5, name: 'Number Series, Coding Decoding and Odd Man Out Series' },
+      { id: 'qa-6', subjectId: 'qa', number: 6, name: 'Direction Test' },
+      { id: 'qa-7', subjectId: 'qa', number: 7, name: 'Blood Relation' },
+      { id: 'qa-8', subjectId: 'qa', number: 8, name: 'Seating Arrangement' },
+      { id: 'qa-9', subjectId: 'qa', number: 9, name: 'Index Number' },
+      { id: 'qa-10', subjectId: 'qa', number: 10, name: 'Statistical Description of Data' },
+      { id: 'qa-11', subjectId: 'qa', number: 11, name: 'Equations' },
+      { id: 'qa-12', subjectId: 'qa', number: 12, name: 'Inequalities' },
+      { id: 'qa-13', subjectId: 'qa', number: 13, name: 'Permutation and Combination' },
+      { id: 'qa-14', subjectId: 'qa', number: 14, name: 'Sequence and Series' },
+      { id: 'qa-15', subjectId: 'qa', number: 15, name: 'Sets, Relation and Functions' },
+      { id: 'qa-16', subjectId: 'qa', number: 16, name: 'Probability' },
+      { id: 'qa-17', subjectId: 'qa', number: 17, name: 'Theoretical Distributions' },
+      { id: 'qa-18', subjectId: 'qa', number: 18, name: 'Sampling' },
+      { id: 'qa-19', subjectId: 'qa', number: 19, name: 'Basic Concepts of Differential and Integral Calculus' },
+      { id: 'eco-1', subjectId: 'economics', number: 1, name: 'Nature and Scope of Business Economics' },
+      { id: 'eco-2', subjectId: 'economics', number: 2, name: 'Business Cycles' },
+      { id: 'eco-3', subjectId: 'economics', number: 3, name: 'Theory of Demand and Supply' },
+      { id: 'eco-4', subjectId: 'economics', number: 4, name: 'Theory of Production and Cost' },
+      { id: 'eco-5', subjectId: 'economics', number: 5, name: 'Price Determination in Different Markets' },
+      { id: 'eco-6', subjectId: 'economics', number: 6, name: 'Determination of National Income' },
+      { id: 'eco-7', subjectId: 'economics', number: 7, name: 'Public Finance' },
+      { id: 'eco-8', subjectId: 'economics', number: 8, name: 'Money Market' },
+      { id: 'eco-9', subjectId: 'economics', number: 9, name: 'International Trade' },
+      { id: 'eco-10', subjectId: 'economics', number: 10, name: 'Indian Economy' }
+    ];
+
+    const buildOfficialLectures = () => {
+      const list = [];
+      const pushLectures = (subjectId, chapterId, entries, defaultFaculty, defaultTiming) => {
+        entries.forEach((entry, idx) => {
+          const normalized = typeof entry === 'number' ? { lecNo: entry, topic: `Lecture ${entry}`, date: 'Recorded' } : entry;
+          const isRecorded = normalized.date === 'Recorded';
+          list.push({ id: `${chapterId}-lec-${idx + 1}`, subjectId, chapterId, lectureNumber: normalized.lecNo || idx + 1, topic: normalized.topic || `Part ${idx + 1}`, date: normalized.date, faculty: normalized.faculty || defaultFaculty, timing: isRecorded ? 'Recorded' : normalized.timing || defaultTiming, isRecorded, status: 'Pending' });
+        });
+      };
+
+      pushLectures('accounting', 'acc-1', [{ lecNo: 1, topic: 'Introduction to Course & Basics of Accounts', date: '2026-11-16' }, { lecNo: 2, topic: 'Basics of Accounts', date: 'Recorded' }], '-', 'Live / Recorded');
+      pushLectures('accounting', 'acc-2', [1,2,3,4,5,6,7,8,9,10].map(n => ({ lecNo:n, topic:n<=5?`Accounting Process: Journal (${n})`:n===6?'Accounting Process: Ledger':n===7?'Accounting Process: Trial Balance':n===8?'Accounting Process: Subsidiary Books':`Accounting Process: Cash Book (${n-8})`, date:'Recorded' })), '-', 'Recorded');
+      ['acc-3','acc-4','acc-5','acc-6','acc-7','acc-8','acc-9','acc-11','acc-12','acc-13'].forEach((chapterId, index) => {
+        const chapter = INITIAL_CHAPTERS.find(c => c.id === chapterId);
+        const counts = [7,6,5,9,5,8,5,9,18,4];
+        const entries = Array.from({ length: counts[index] }, (_, i) => ({ lecNo:i+1, topic:`${chapter.name} (Lec ${i+1})`, date: chapterId === 'acc-6' ? '2026-12-' + String(21+i).padStart(2,'0') : '2027-01-01' }));
+        pushLectures('accounting', chapterId, entries, '-', 'Live Session');
+      });
+      pushLectures('accounting', 'acc-10', Array.from({length:22}, (_,i)=>({lecNo:i+1, topic:i<3?'Introduction of Partnership Accounts':i<5?'Treatment of Goodwill':i<9?'Admission of New Partner':i<17?'Retirement & Death of Partner':'Dissolution of Firm', date:addDaysISO('2027-01-21',i)})), '-', 'Live Session');
+
+      const lawFac='Chaitanya Jain Sir', lawTime='8:30am - 10:30am';
+      [[ 'law-1',1,'2026-11-16' ],[ 'law-2',4,'2026-11-17' ],[ 'law-3',17,'2026-11-21' ],[ 'law-4',16,'2026-12-11' ],[ 'law-5',18,'2026-12-30' ],[ 'law-6',8,'2027-01-20' ],[ 'law-7',4,'2027-01-30' ],[ 'law-8',38,'2027-02-04' ]].forEach(([chapterId,count,start])=>{
+        const entries=Array.from({length:count},(_,i)=>({lecNo:i+1, topic:`Part ${i+1}`, date:i===0?start:addDaysISO(start,i)}));
+        pushLectures('laws',chapterId,entries,lawFac,lawTime);
+      });
+
+      const qaFac='Anurag Chauhan Sir', qaTime='6:00pm - 7:30pm';
+      const qaCounts=[13,10,12,7,2,3,2,2,5,4,6,2,6,3,5,4,3,3,4];
+      qaCounts.forEach((count,index)=>{
+        const chapterId=`qa-${index+1}`;
+        const start= index===0?'2026-11-16':addDaysISO('2026-11-16',count);
+        pushLectures('qa',chapterId,Array.from({length:count},(_,i)=>({lecNo:i+1,topic:`Part ${i+1}`,date:addDaysISO(start,i)})),qaFac,qaTime);
+      });
+
+      const ecoFac='Love Kaushik Sir', ecoTime='12:00pm - 1:30pm';
+      const ecoCounts=[5,4,16,10,9,15,10,6,10,5];
+      ecoCounts.forEach((count,index)=>{
+        const chapterId=`eco-${index+1}`;
+        pushLectures('economics',chapterId,Array.from({length:count},(_,i)=>({lecNo:i+1,topic:`Lec ${i+1}`,date:addDaysISO('2026-11-16',(index*10)+i)})),ecoFac,ecoTime);
+      });
+      return list;
+    };
+
+    const INITIAL_FLASHCARDS = [
+      { id:'card-1', subjectId:'accounting', chapterId:'acc-1', concept:'Golden Rules of Accounting', explanation:'Personal: Debit the receiver, Credit the giver. Real: Debit what comes in, Credit what goes out. Nominal: Debit all expenses/losses, Credit all incomes/gains.', formulaOrSection:'Entity Concept & Money Measurement Concept', question:'Classify Prepaid Insurance Account under Traditional and Modern approaches.', revised:false },
+      { id:'card-2', subjectId:'laws', chapterId:'law-3', concept:'Essential Elements of Partnership', explanation:'An association of two or more persons based on an agreement to carry on business and share profits with mutual agency.', formulaOrSection:'Section 4 & Section 6 of Indian Partnership Act, 1932', question:'Is sharing of profits conclusive evidence of partnership?', revised:false },
+      { id:'card-3', subjectId:'qa', chapterId:'qa-1', concept:'Effective Rate of Interest', explanation:'Effective rate measures actual annual interest when compounding occurs more than once a year.', formulaOrSection:'E = (1 + i/m)^m - 1', question:'Find the effective rate equivalent to 12% p.a. compounded quarterly.', revised:false },
+      { id:'card-4', subjectId:'economics', chapterId:'eco-3', concept:'Price Elasticity of Demand', explanation:'Responsiveness of quantity demanded to a change in price, ceteris paribus.', formulaOrSection:'Ep = (ΔQ / ΔP) × (P1 + P2) / (Q1 + Q2)', question:'Calculate Arc Elasticity from the given demand schedule.', revised:false }
+    ];
+
+    const buildInitialData = () => ({ chapters:INITIAL_CHAPTERS.map(ch=>({...ch,completedManual:false,completedAt:null})), lectures:buildOfficialLectures(), notes:[], dpps:[], exercises:[], customMaterials:[], revisionTasks:[], flashcards:INITIAL_FLASHCARDS, focusSessions:[], dailyTasks:[{id:'dt-1',text:'Complete 2 Accounting lectures',completed:false},{id:'dt-2',text:'Solve 1 Business Laws DPP',completed:false},{id:'dt-3',text:'Practise 30 Quantitative Aptitude questions',completed:false},{id:'dt-4',text:'Revise 1 Business Economics chapter',completed:false}], portalMatrix:{}, settings:{examDate:'2027-05-15',dailyTargetHours:6,theme:'dark',studentName:'Aspirant'} });
+
+    const PRIMARY_STORAGE_KEY='ca_foundation_sampurna_may_2027_permanent_v1';
+    const UNIFIED_SILENT_MEET_KEY='ca_sampurna_2027_unified_silent_meet_v1';
+
+    const loadPermanentPlannerData=()=>{ const defaults=buildInitialData(); try{const raw=localStorage.getItem(PRIMARY_STORAGE_KEY); if(!raw)return defaults; const parsed=JSON.parse(raw); if(!parsed||typeof parsed!=='object')return defaults; const savedLectures=new Map(Array.isArray(parsed.lectures)?parsed.lectures.map(l=>[l.id,l]):[]); const lectures=defaults.lectures.map(l=>savedLectures.get(l.id)?{...l,...savedLectures.get(l.id)}:l); const savedChapters=new Map(Array.isArray(parsed.chapters)?parsed.chapters.map(c=>[c.id,c]):[]); const chapters=defaults.chapters.map(c=>savedChapters.get(c.id)?{...c,...savedChapters.get(c.id)}:c); return {...defaults,...parsed,chapters,lectures,settings:{...defaults.settings,...(parsed.settings||{})}};}catch{return defaults;} };
+
+    function App(){
+      const [appData,setAppData]=useState(()=>loadPermanentPlannerData());
+      const [lastSavedAt,setLastSavedAt]=useState(()=>new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date()));
+      const [unifiedSilentMeet,setUnifiedSilentMeet]=useState(()=>{try{const saved=localStorage.getItem(UNIFIED_SILENT_MEET_KEY);if(saved)return JSON.parse(saved);}catch{}return {meetUrl:'https://meet.google.com/landing',hostName:'CA. Beeresh'};});
+      const [activeNav,setActiveNav]=useState('dashboard');
+      const [activeSubjectId,setActiveSubjectId]=useState('accounting');
+      const [activeChapterId,setActiveChapterId]=useState(null);
+      const [sidebarCollapsed,setSidebarCollapsed]=useState(false);
+      const [mobileMenuOpen,setMobileMenuOpen]=useState(false);
+      const [toast,setToast]=useState(null);
+      const todayISO=getTodayISO();
+      const [selectedDashboardDate,setSelectedDashboardDate]=useState(todayISO);
+      const [simulatedPacePerDay,setSimulatedPacePerDay]=useState(3);
+      const [referenceDateISO,setReferenceDateISO]=useState(todayISO);
+
+      useEffect(()=>{try{localStorage.setItem(PRIMARY_STORAGE_KEY,JSON.stringify(appData));localStorage.setItem(UNIFIED_SILENT_MEET_KEY,JSON.stringify(unifiedSilentMeet));setLastSavedAt(new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date()));}catch{}},[appData,unifiedSilentMeet]);
+
+      const showToast=(msg)=>{setToast(msg);setTimeout(()=>setToast(null),3000);};
+      const [countdown,setCountdown]=useState({days:0,hours:0,minutes:0,seconds:0});
+      useEffect(()=>{const update=()=>{const target=new Date(`${appData.settings.examDate}T09:00:00+05:30`).getTime();const diff=Math.max(0,target-Date.now());setCountdown({days:Math.floor(diff/86400000),hours:Math.floor(diff/3600000)%24,minutes:Math.floor(diff/60000)%60,seconds:Math.floor(diff/1000)%60});};update();const t=setInterval(update,1000);return()=>clearInterval(t);},[appData.settings.examDate]);
+
+      const stats=useMemo(()=>{
+        const chapterStatsMap={};
+        appData.chapters.forEach(ch=>{const chLecs=appData.lectures.filter(l=>l.chapterId===ch.id);const totalLectures=chLecs.length;const completedLectures=chLecs.filter(l=>l.status==='Completed').length;const lecturePct=totalLectures>0?Math.round(completedLectures/totalLectures*100):0;const isCompleted=ch.completedManual||(totalLectures>0&&completedLectures===totalLectures);chapterStatsMap[ch.id]={...ch,totalLectures,completedLectures,totalNotes:appData.notes.filter(n=>n.chapterId===ch.id).length,totalDpps:appData.dpps.filter(d=>d.chapterId===ch.id).length,totalExercises:appData.exercises.filter(e=>e.chapterId===ch.id).length,isCompleted,progressPct:isCompleted?100:lecturePct};});
+        const subjectStatsMap={};
+        SUBJECTS.forEach(subj=>{const subjChs=appData.chapters.filter(c=>c.subjectId===subj.id).map(c=>chapterStatsMap[c.id]);const subjLecs=appData.lectures.filter(l=>l.subjectId===subj.id);const totalLectures=subjLecs.length;const completedLectures=subjLecs.filter(l=>l.status==='Completed').length;const totalChapters=subjChs.length;const completedChapters=subjChs.filter(c=>c.isCompleted).length;const datedDue=subjLecs.filter(l=>l.date!=='Recorded'&&l.date<=referenceDateISO).length;const recordedTotal=subjLecs.filter(l=>l.date==='Recorded').length;const expectedLecturesDue=Math.min(totalLectures,datedDue+recordedTotal);const backlogLectures=Math.max(0,expectedLecturesDue-completedLectures);const paceRatio=expectedLecturesDue>0?Math.round(completedLectures/expectedLecturesDue*100):100;subjectStatsMap[subj.id]={...subj,totalChapters,completedChapters,pendingChapters:totalChapters-completedChapters,totalLectures,completedLectures,completionPct:totalLectures?Math.round(completedLectures/totalLectures*100):0,expectedLecturesDue,backlogLectures,riskStatus:paceRatio<65||backlogLectures>=8?'AT RISK':paceRatio<88||backlogLectures>=3?'MODERATE RISK':'SAFE'};});
+        const totalChapters=appData.chapters.length;const completedChapters=Object.values(chapterStatsMap).filter(c=>c.isCompleted).length;const totalLectures=appData.lectures.length;const completedLectures=appData.lectures.filter(l=>l.status==='Completed').length;const pendingLectures=totalLectures-completedLectures;const totalExpectedDue=Object.values(subjectStatsMap).reduce((a,s)=>a+s.expectedLecturesDue,0);const totalBacklogDue=Math.max(0,totalExpectedDue-completedLectures);const overallPaceRatio=totalExpectedDue?Math.round(completedLectures/totalExpectedDue*100):100;const daysLeftToExam=Math.max(1,Math.ceil((new Date(appData.settings.examDate).getTime()-new Date(referenceDateISO).getTime())/86400000));return {chapterStatsMap,subjectStatsMap,totalChapters,completedChapters,pendingChapters:totalChapters-completedChapters,totalLectures,completedLectures,pendingLectures,overallPct:totalLectures?Math.round(completedLectures/totalLectures*100):0,overallRisk:overallPaceRatio<65||totalBacklogDue>=15?'AT RISK':overallPaceRatio<88||totalBacklogDue>=6?'MODERATE RISK':'SAFE',requiredDailyVelocity:(pendingLectures/daysLeftToExam).toFixed(1),projectedCompletionDate:addDaysISO(referenceDateISO,Math.ceil(pendingLectures/Math.max(.5,simulatedPacePerDay)))};
+      },[appData,referenceDateISO,simulatedPacePerDay]);
+
+      const toggleLectureStatus=(lectureId,nextStatus=null)=>setAppData(prev=>{const lec=prev.lectures.find(l=>l.id===lectureId);if(!lec)return prev;const status=nextStatus||(lec.status==='Completed'?'Pending':'Completed');return {...prev,lectures:prev.lectures.map(l=>l.id===lectureId?{...l,status}:l)};});
+      const toggleChapterCompleteManual=(chapterId)=>{setAppData(prev=>{const ch=prev.chapters.find(c=>c.id===chapterId);if(!ch)return prev;const nextDone=!ch.completedManual;return {...prev,chapters:prev.chapters.map(c=>c.id===chapterId?{...c,completedManual:nextDone}:c),lectures:prev.lectures.map(l=>l.chapterId===chapterId?{...l,status:nextDone?'Completed':'Pending'}:l)};});showToast('Chapter progress updated & saved!');};
+      const openSubjectDashboard=(subjectId)=>{setActiveSubjectId(subjectId);setActiveChapterId(null);setActiveNav(`subject-${subjectId}`);setMobileMenuOpen(false);};
+      const openChapterWorkspace=(chapterId)=>{const ch=appData.chapters.find(c=>c.id===chapterId);if(ch)setActiveSubjectId(ch.subjectId);setActiveChapterId(chapterId);setActiveNav('chapter-workspace');setMobileMenuOpen(false);};
+      const cleanStudentName=String(appData.settings.studentName||'Aspirant').replace(/^CA.?\s*/i,'').trim();
+
+      const navItems=[
+        {id:'dashboard',label:'1. Dashboard',icon:LayoutDashboard},{id:'schedule',label:'2. Lecture Schedule',icon:Calendar},{id:'tracker',label:'3. Syllabus Tracker',icon:CheckCircle2},{id:'subjects-group',label:'4. Subjects',icon:BookOpen,children:SUBJECTS.map(s=>({id:`subject-${s.id}`,subjectId:s.id,label:s.name}))},{id:'materials',label:'5. Study Materials',icon:FolderOpen},{id:'revision',label:'6. Revision Centre',icon:RefreshCw},{id:'timer',label:'7. Focus Timer',icon:Timer},{id:'mtp-rtp',label:'8. MTP & RTP',icon:Award},{id:'backlog',label:'9. Backlog Manager',icon:AlertTriangle},{id:'analytics',label:'10. Analytics',icon:BarChart3},{id:'silent-meet',label:'11. Silent Study Meet',icon:Video},{id:'settings',label:'12. Settings',icon:Settings}
+      ];
+
+      return (
+        <div className="min-h-screen flex bg-[#0b0b0e] text-zinc-100">
+          {toast&&<div className="fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-2xl flex items-center gap-2"><Sparkles className="w-4 h-4"/><span>{toast}</span></div>}
+          <aside className={`fixed lg:static inset-y-0 left-0 z-40 flex flex-col border-r bg-[#111116] border-[#23232c] transition-all ${sidebarCollapsed?'w-20':'w-64'} ${mobileMenuOpen?'translate-x-0':'-translate-x-full lg:translate-x-0'}`}>
+            <div className="p-4 flex items-center justify-between border-b border-[#23232c]">{!sidebarCollapsed&&<div className="truncate"><div className="text-xs font-black tracking-wider text-purple-400 uppercase">CA FOUNDATION</div><div className="text-sm font-extrabold text-white truncate">SAMPURNA MAY 2027</div></div>}<button onClick={()=>setSidebarCollapsed(!sidebarCollapsed)} className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 hidden lg:inline-flex">{sidebarCollapsed?<ChevronRight/>:<ChevronLeft/>}</button><button onClick={()=>setMobileMenuOpen(false)} className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 lg:hidden"><X/></button></div>
+            <nav className="flex-1 overflow-y-auto p-3 space-y-1">{navItems.map(item=>{const Icon=item.icon;if(item.children)return <div key={item.id} className="pt-2 pb-1">{!sidebarCollapsed&&<div className="px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-zinc-500 flex items-center gap-2"><Icon className="w-3.5 h-3.5 text-purple-400"/><span>{item.label}</span></div>}<div className="mt-1 space-y-1">{item.children.map(sub=><button key={sub.id} onClick={()=>openSubjectDashboard(sub.subjectId)} className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold ${activeNav===sub.id?'bg-purple-600 text-white':'text-zinc-400 hover:bg-[#1b1b24]'}`}><span className="w-2 h-2 rounded-full bg-purple-400 shrink-0"/> {!sidebarCollapsed&&<span className="truncate">{sub.label}</span>}</button>)}</div></div>;return <button key={item.id} onClick={()=>{setActiveNav(item.id);setMobileMenuOpen(false);}} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold ${activeNav===item.id?'bg-purple-600 text-white':'text-zinc-400 hover:bg-[#1b1b24]'}`}><Icon className="w-4 h-4 shrink-0"/> {!sidebarCollapsed&&<span className="truncate">{item.label}</span>}</button>;})}</nav>
+          </aside>
+          <div className="flex-1 flex flex-col min-w-0">
+            <header className="sticky top-0 z-30 px-4 sm:px-6 py-3.5 border-b bg-[#0b0b0e]/90 border-[#22222b] backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3"><button onClick={()=>setMobileMenuOpen(true)} className="p-2 rounded-xl bg-[#181820] border border-[#2a2a36] text-zinc-300 lg:hidden"><Menu/></button><div><div className="flex items-center gap-2"><span className="text-sm sm:text-base font-black text-white">CA FOUNDATION – SAMPURNA MAY 2027</span><span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"><Save className="w-3 h-3"/> Auto-Saved ({lastSavedAt})</span></div><p className="text-[11px] text-zinc-400">Plan Smart. Study Consistently. Become a CA.</p></div></div>
+              <div className="px-3 py-1.5 rounded-xl bg-[#16161f] border border-[#292936] text-xs font-bold text-purple-300">CA. {cleanStudentName}</div>
+            </header>
+            <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
+              {activeNav==='dashboard'&&<div className="space-y-6 animate-view-enter">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4"><div className="lg:col-span-2 p-6 rounded-2xl bg-[#141418] border border-[#272730] flex flex-col justify-between gap-4"><div><div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-600/15 border border-purple-500/30 text-purple-300 text-xs font-bold"><span>Today: {formatDateDDMMMYYYY(todayISO)}</span><span>•</span><span>Daily Target: {appData.settings.dailyTargetHours}h</span></div><h1 className="text-2xl sm:text-3xl font-black text-white mt-2">Welcome back, <span className="text-purple-400">CA. {cleanStudentName}</span></h1></div><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{[{label:'Lecture Schedule',nav:'schedule'},{label:'Focus Timer',nav:'timer'},{label:'Silent Study Meet',nav:'silent-meet'},{label:'MTP & RTP PDFs',nav:'mtp-rtp'}].map(q=><button key={q.nav} onClick={()=>setActiveNav(q.nav)} className="p-3 rounded-xl bg-[#1c1c23] hover:bg-purple-600/20 border border-[#2b2b36] text-xs font-bold text-zinc-200">{q.label}</button>)}</div></div>
+                <div className="p-6 rounded-2xl bg-[#141418] border border-purple-500/30 flex flex-col justify-between"><div className="flex justify-between text-xs font-bold text-purple-400"><span>MAY 2027 COUNTDOWN</span><span>{formatDateDDMMMYYYY(appData.settings.examDate)}</span></div><div className="grid grid-cols-4 gap-2 my-4 text-center">{[{label:'Days',val:countdown.days},{label:'Hours',val:countdown.hours},{label:'Mins',val:countdown.minutes},{label:'Secs',val:countdown.seconds}].map(c=><div key={c.label} className="p-2.5 rounded-xl bg-[#1c1c24] border border-[#2c2c38]"><div className="text-xl font-black text-white">{c.val}</div><div className="text-[10px] text-zinc-400 uppercase font-bold">{c.label}</div></div>)}</div><p className="text-[11px] text-emerald-400 font-semibold text-center">"Small daily discipline compounds into Chartered Accountancy success."</p></div></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">{SUBJECTS.map(subj=>{const s=stats.subjectStatsMap[subj.id];return <div key={subj.id} onClick={()=>openSubjectDashboard(subj.id)} className="cursor-pointer p-5 rounded-2xl bg-[#141418] hover:bg-[#191920] border border-[#272732] hover:border-purple-500/60 transition-all space-y-3"><div className="flex justify-between"><span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-purple-600/20 text-purple-300">{subj.code}</span><span className="text-sm font-black text-purple-400">{s.completionPct}%</span></div><h3 className="text-base font-extrabold text-white">{subj.name}</h3><div className="text-xs text-zinc-400 flex justify-between"><span>Chapters: <strong className="text-white">{s.completedChapters}/{s.totalChapters}</strong></span><span>Lectures: <strong className="text-white">{s.completedLectures}/{s.totalLectures}</strong></span></div><div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden"><div className="h-full bg-purple-500" style={{width:`${s.completionPct}%`}}/></div></div>;})}</div>
+                <div className="p-6 rounded-2xl bg-[#141418] border border-[#282834] space-y-4"><div className="flex flex-wrap items-center justify-between gap-2"><div className="flex items-center gap-2"><ShieldCheck className="w-6 h-6 text-emerald-400"/><h2 className="text-base font-black text-white uppercase">Preparation Risk Predictor:</h2><span className="px-3 py-0.5 rounded-full text-xs font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/40">{stats.overallRisk}</span></div></div></div>
+              </div>}
+
+              {activeNav.startsWith('subject-')&&<div className="space-y-6 animate-view-enter">{(()=>{const subject=SUBJECTS.find(s=>activeNav===`subject-${s.id}`)||SUBJECTS[0];const s=stats.subjectStatsMap[subject.id];const chapters=Object.values(stats.chapterStatsMap).filter(c=>c.subjectId===subject.id);return <><div className="p-6 rounded-2xl bg-[#141418] border border-[#272730] flex justify-between items-center"><div><div className="text-xs font-bold text-purple-400 uppercase">{subject.code} • {subject.faculty}</div><h1 className="text-2xl font-black text-white">{subject.name} — Chapter Dashboard</h1></div><div className="text-2xl font-black text-purple-400">{s.completionPct}%</div></div><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">{chapters.map(ch=><div key={ch.id} onClick={()=>openChapterWorkspace(ch.id)} className="cursor-pointer p-5 rounded-2xl bg-[#121216] hover:bg-[#17171d] border border-[#262630] hover:border-purple-500/60 flex flex-col justify-between space-y-4"><div className="space-y-2"><div className="flex justify-between items-center"><span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-600/20 text-purple-300">Chapter {ch.number}</span><button onClick={e=>{e.stopPropagation();toggleChapterCompleteManual(ch.id)}} className={`text-[10px] font-bold px-2 py-0.5 rounded border ${ch.isCompleted?'bg-emerald-500/20 text-emerald-300 border-emerald-500/40':'bg-zinc-800 text-zinc-400 border-zinc-700'}`}>{ch.isCompleted?'Completed':'Mark Complete'}</button></div><h3 className="text-sm font-black text-white uppercase">{ch.name}</h3><div className="text-[11px] font-bold text-purple-400">{ch.totalLectures} Lectures | {ch.totalNotes} Notes | {ch.totalDpps} DPP | {ch.totalExercises} Exercises</div></div><div className="space-y-1"><div className="flex justify-between text-[11px] font-bold"><span className="text-zinc-400">Progress</span><span className="text-white">{ch.progressPct}%</span></div><div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden"><div className="h-full bg-purple-500" style={{width:`${ch.progressPct}%`}}/></div></div></div>)}</div></>;})()}</div>}
+
+              {activeNav==='chapter-workspace'&&activeChapterId&&<div className="space-y-6 animate-view-enter">{(()=>{const ch=stats.chapterStatsMap[activeChapterId];const lectures=appData.lectures.filter(l=>l.chapterId===activeChapterId);return <div className="p-6 rounded-2xl bg-[#141418] border border-[#272730] space-y-4"><button onClick={()=>openSubjectDashboard(ch.subjectId)} className="text-xs font-bold text-purple-400 flex items-center gap-1"><ArrowLeft className="w-4 h-4"/> Back to Subject Chapters</button><h1 className="text-2xl font-black text-white">{ch.name} ({ch.progressPct}%)</h1><div className="space-y-2.5">{lectures.map(lec=><div key={lec.id} className="p-3.5 rounded-xl bg-[#1b1b22] border border-[#2b2b36] flex justify-between items-center"><div><div className="text-xs font-bold text-white">Lecture {lec.lectureNumber}: {lec.topic}</div><div className="text-[11px] text-zinc-400">{formatDateDDMMMYYYY(lec.date)} • {lec.timing} • {lec.faculty}</div></div><button onClick={()=>toggleLectureStatus(lec.id)} className={`px-3 py-1.5 rounded-xl text-xs font-bold ${lec.status==='Completed'?'bg-emerald-600 text-white':'bg-purple-600 text-white'}`}>{lec.status==='Completed'?'Completed ✓':'Mark Complete'}</button></div>)}</div></div>;})()}</div>}
+
+              {activeNav==='schedule'&&<div className="p-6 rounded-2xl bg-[#141418] border border-[#272730] space-y-4 animate-view-enter"><h1 className="text-xl font-black text-white">Complete Lecture Timetable</h1><div className="space-y-2">{appData.lectures.map(lec=>{const subj=SUBJECTS.find(s=>s.id===lec.subjectId);const ch=appData.chapters.find(c=>c.id===lec.chapterId);return <div key={lec.id} className="p-3.5 rounded-xl bg-[#1b1b22] border border-[#2b2b36] flex justify-between items-center"><div><div className="text-[11px] font-bold text-purple-400">{subj?.name} • {ch?.name}</div><div className="text-xs font-bold text-white">Lec {lec.lectureNumber}: {lec.topic} ({formatDateDDMMMYYYY(lec.date)})</div></div><button onClick={()=>toggleLectureStatus(lec.id)} className={`px-3 py-1.5 rounded-xl text-xs font-bold ${lec.status==='Completed'?'bg-emerald-600 text-white':'bg-purple-600 text-white'}`}>{lec.status==='Completed'?'Completed ✓':'Mark Done'}</button></div>;})}</div></div>}
+
+              {activeNav==='tracker'&&<div className="p-6 rounded-2xl bg-[#141418] border border-[#272730] space-y-4 animate-view-enter"><h1 className="text-xl font-black text-white">Syllabus Completion Tracker ({stats.overallPct}%)</h1><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{SUBJECTS.map(s=>{const st=stats.subjectStatsMap[s.id];return <div key={s.id} className="p-4 rounded-xl bg-[#1b1b22] border border-[#2b2b36] space-y-2"><div className="flex justify-between font-bold text-sm"><span>{s.name}</span><span className="text-purple-400">{st.completionPct}%</span></div><div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden"><div className="h-full bg-purple-500" style={{width:`${st.completionPct}%`}}/></div></div>;})}</div></div>}
+
+              {['materials','revision','timer','mtp-rtp','backlog','analytics'].includes(activeNav)&&<div className="p-6 rounded-2xl bg-[#141418] border border-[#272730] space-y-4 animate-view-enter"><div className="flex justify-between items-center"><h1 className="text-xl font-black text-white uppercase">{activeNav.replace('-',' ')}</h1><a href="https://www.lifelonglearner.in/free-resource" target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold">Open Lifelong Learner PYQ / RTP / MTP PDFs</a></div><p className="text-xs text-zinc-400">All updates in this module are automatically saved to your browser storage.</p></div>}
+
+              {activeNav==='silent-meet'&&<div className="max-w-3xl mx-auto p-6 sm:p-8 rounded-2xl bg-[#141418] border border-emerald-500/40 glow-emerald space-y-5 animate-view-enter"><div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-black uppercase"><span>Official 24×7 Silent Study Meet • Host: CA. Beeresh</span></div><h1 className="text-2xl font-black text-white">CA SAMPURNA MAY 2027 — SILENT GOOGLE MEET</h1><p className="text-xs sm:text-sm text-zinc-300">Hosted by <strong className="text-purple-400">CA. Beeresh</strong>. One single valid Google Meet link for every serious aspirant. Zero discussion — microphones muted, camera on for silent accountability.</p><div className="p-4 rounded-xl bg-[#0d0d11] border border-[#282834] flex flex-col sm:flex-row items-center justify-between gap-3"><span className="text-xs font-mono text-emerald-300 truncate">{unifiedSilentMeet.meetUrl}</span><div className="flex gap-2"><a href={unifiedSilentMeet.meetUrl} target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase">Join Silent Google Meet</a><a href="https://meet.google.com/new" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold">Host (CA. Beeresh): New Meet</a></div></div><div className="flex gap-2"><input type="url" value={unifiedSilentMeet.meetUrl} onChange={e=>setUnifiedSilentMeet({meetUrl:e.target.value,hostName:'CA. Beeresh'})} placeholder="Paste valid https://meet.google.com/xxx-xxxx-xxx link here..." className="flex-1 px-3 py-2 rounded-xl bg-[#121216] border border-[#2e2e3a] text-xs text-white"/></div></div>}
+
+              {activeNav==='settings'&&<div className="max-w-xl p-6 rounded-2xl bg-[#141418] border border-[#272730] space-y-4 animate-view-enter"><h1 className="text-xl font-black text-white">Planner Settings</h1><div><label className="block text-xs text-zinc-400 mb-1">Your Name (CA. Prefix)</label><input type="text" value={cleanStudentName} onChange={e=>setAppData(prev=>({...prev,settings:{...prev.settings,studentName:e.target.value}}))} className="w-full px-3 py-2 rounded-xl bg-[#1c1c22] border border-[#2e2e3a] text-xs text-white"/></div></div>}
+            </main>
+          </div>
+        </div>
+      );
+    }
+
+    const root=ReactDOM.createRoot(document.getElementById('root'));root.render(<App/>);
+  </script>
+</body>
+</html>
