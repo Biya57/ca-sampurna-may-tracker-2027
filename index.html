@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CA FOUNDATION – SAMPURNA MAY 2027</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-view-enter { animation: fadeSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .card-interactive { transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease; }
+    .card-interactive:hover { transform: translateY(-2px); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 9999px; }
+  </style>
+</head>
+<body class="bg-[#0B0B0F] text-white antialiased selection:bg-purple-600 selection:text-white">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    const STORAGE_KEY = 'ca_sampurna_may_2027_v2';
+
+    const SUBJECTS = [
+      { id: 'accounting', name: 'Accounting', code: 'Paper 1', faculty: 'Accounting Faculty' },
+      { id: 'laws', name: 'Business Laws', code: 'Paper 2', faculty: 'Chaitanya Jain Sir' },
+      { id: 'quant', name: 'Quantitative Aptitude', code: 'Paper 3', faculty: 'Anurag Chauhan Sir' },
+      { id: 'economics', name: 'Business Economics', code: 'Paper 4', faculty: 'Love Kaushik Sir' },
+    ];
+
+    const LIFELONG_SESSIONS = ['Sep 26', 'May 26', 'Jan 26', 'Sep 25', 'May 25', 'Jan 25'];
+    const LIFELONG_TYPES = ['PYQ', 'RTP', 'MTP 1 Q', 'MTP 1 Ans', 'MTP 2 Q', 'MTP 2 Ans'];
+
+    function formatDateDDMMMYYYY(iso) {
+      if (!iso || iso === 'Recorded') return iso || 'Recorded';
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const parts = iso.split('-');
+      if (parts.length !== 3) return iso;
+      const y = parts[0];
+      const m = parseInt(parts[1], 10) - 1;
+      const d = parts[2];
+      return `${d} ${months[m] || ''} ${y}`;
+    }
+
+    function getTodayKolkataISO() {
+      try {
+        const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
+        return fmt.format(new Date());
+      } catch {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      }
+    }
+
+    // Helper: Generates Mon-Fri dates matching exact PDF dates
+    function genDates(startIso, count, allowSatDates = [], skipDates = []) {
+      const out = [];
+      let cur = new Date(startIso + 'T00:00:00');
+      const allowSet = new Set(allowSatDates);
+      const skipSet = new Set(skipDates);
+      while (out.length < count) {
+        const y = cur.getFullYear();
+        const m = String(cur.getMonth() + 1).padStart(2, '0');
+        const d = String(cur.getDate()).padStart(2, '0');
+        const iso = `${y}-${m}-${d}`;
+        const day = cur.getDay();
+        const isWeekday = day >= 1 && day <= 5;
+        if (!skipSet.has(iso) && (isWeekday || allowSet.has(iso))) {
+          out.push(iso);
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      return out;
+    }
+
+    function buildInitialLectures() {
+      const list = [];
+
+      // 1. ACCOUNTING (110 Lectures — Exact PDF Dates & Recorded Statuses)
+      const accPlan = [
+        { chNo: 1, ch: 'Basics of Accounts', items: [
+          { t: 'Introduction to Course & Basics of Accounts', d: '2026-11-16', s: 'pending' },
+          { t: 'Basics of Accounts', d: 'Recorded', s: 'recorded' }
+        ]},
+        { chNo: 2, ch: 'Accounting Process', items: [
+          'Accounting Process: Journal','Accounting Process: Journal','Accounting Process: Journal',
+          'Accounting Process: Journal','Accounting Process: Journal','Accounting Process: Ledger',
+          'Accounting Process: Trial Balance','Accounting Process: Subsidiary Books',
+          'Accounting Process: Cash Book','Accounting Process: Cash Book'
+        ].map(t => ({ t, d: 'Recorded', s: 'recorded' }))},
+        { chNo: 3, ch: 'Depreciation & Amortisation', items: Array(7).fill({ t: 'Depreciation & Amortisation', d: 'Recorded', s: 'recorded' })},
+        { chNo: 4, ch: 'Bills of Exchange & Promissory Notes', items: Array(6).fill({ t: 'Bills of Exchange & Promissory Notes', d: 'Recorded', s: 'recorded' })},
+        { chNo: 5, ch: 'Bank Reconciliation Statement (BRS)', items: Array(5).fill({ t: 'Bank Reconciliation Statement (BRS)', d: 'Recorded', s: 'recorded' })},
+        { chNo: 6, ch: 'Final Accounts of Sole Proprietors', items: [
+          '2026-12-21','2026-12-22','2026-12-23','2026-12-24','2026-12-25',
+          '2026-12-26','2026-12-28','2026-12-29','2026-12-30'
+        ].map(d => ({ t: 'Final Accounts of Sole Proprietors', d, s: 'pending' }))},
+        { chNo: 7, ch: 'Rectification of Errors', items: [
+          '2026-12-31','2027-01-01','2027-01-02','2027-01-04','2027-01-05'
+        ].map(d => ({ t: 'Rectification of Errors', d, s: 'pending' }))},
+        { chNo: 8, ch: 'Accounts from Incomplete Records', items: [
+          '2027-01-06','2027-01-07','2027-01-08','2027-01-09',
+          '2027-01-11','2027-01-12','2027-01-13','2027-01-14'
+        ].map(d => ({ t: 'Accounts from Incomplete Records', d, s: 'pending' }))},
+        { chNo: 9, ch: 'Inventories', items: [
+          '2027-01-15','2027-01-16','2027-01-18','2027-01-19','2027-01-20'
+        ].map(d => ({ t: 'Inventories', d, s: 'pending' }))},
+        { chNo: 10, ch: 'Partnership Accounts', items: [
+          ['Introduction of Partnership Accounts','2027-01-21'],['Introduction of Partnership Accounts','2027-01-22'],
+          ['Introduction of Partnership Accounts','2027-01-23'],['Treatment of Goodwill','2027-01-25'],
+          ['Treatment of Goodwill','2027-01-27'],['Admission of New Partner','2027-01-28'],
+          ['Admission of New Partner','2027-01-29'],['Admission of New Partner','2027-01-30'],
+          ['Admission of New Partner','2027-02-01'],['Retirement & Death of Partner','2027-02-02'],
+          ['Retirement & Death of Partner','2027-02-03'],['Retirement & Death of Partner','2027-02-04'],
+          ['Retirement & Death of Partner','2027-02-05'],['Retirement & Death of Partner','2027-02-06'],
+          ['Retirement & Death of Partner','2027-02-08'],['Retirement & Death of Partner','2027-02-09'],
+          ['Retirement & Death of Partner','2027-02-10'],['Dissolution of Firm','2027-02-11'],
+          ['Dissolution of Firm','2027-02-12'],['Dissolution of Firm','2027-02-13'],
+          ['Dissolution of Firm','2027-02-15'],['Dissolution of Firm','2027-02-16']
+        ].map(([t, d]) => ({ t, d, s: 'pending' }))},
+        { chNo: 11, ch: 'Non-Profit Organisation', items: [
+          '2027-02-17','2027-02-18','2027-02-19','2027-02-20','2027-02-22',
+          '2027-02-23','2027-02-24','2027-02-25','2027-02-26'
+        ].map(d => ({ t: 'Financial Statements of NPO', d, s: 'pending' }))},
+        { chNo: 12, ch: 'Company Accounts', items: [
+          ['Issue, Forfeiture and Reissue','2027-02-27'],['Issue, Forfeiture and Reissue','2027-03-01'],
+          ['Issue, Forfeiture and Reissue','2027-03-02'],['Issue, Forfeiture and Reissue','2027-03-03'],
+          ['Issue, Forfeiture and Reissue','2027-03-04'],['Issue, Forfeiture and Reissue','2027-03-05'],
+          ['Issue of Debentures','2027-03-06'],['Issue of Debentures','2027-03-08'],
+          ['Issue of Debentures','2027-03-09'],['Bonus & Right Issue','2027-03-10'],
+          ['Bonus & Right Issue','2027-03-11'],['Bonus & Right Issue','2027-03-12'],
+          ['Redemption of Preference Shares','2027-03-13'],['Redemption of Preference Shares','2027-03-15'],
+          ['Redemption of Preference Shares','2027-03-16'],['Redemption of Debentures','2027-03-17'],
+          ['Redemption of Debentures','2027-03-18'],['Redemption of Debentures','2027-03-19']
+        ].map(([t, d]) => ({ t, d, s: 'pending' }))},
+        { chNo: 13, ch: 'Theoretical Framework', items: [
+          '2027-03-20','2027-03-22','2027-03-23','2027-03-24'
+        ].map(d => ({ t: 'Theoretical Framework', d, s: 'pending' }))}
+      ];
+
+      accPlan.forEach(u => {
+        u.items.forEach((it, i) => {
+          list.push({
+            id: `acc-${u.chNo}-${i + 1}`,
+            subjectId: 'accounting',
+            chapterNo: u.chNo,
+            chapterName: u.ch,
+            topic: it.t,
+            lectureNo: i + 1,
+            date: it.d,
+            faculty: 'Accounting Faculty',
+            timing: it.d === 'Recorded' ? 'Recorded' : 'Scheduled',
+            status: it.s
+          });
+        });
+      });
+
+      // 2. BUSINESS LAWS (106 Lectures — Mon-Sat, skips Tue Jan 26 2027)
+      const lawChapters = [
+        { chNo: 1, ch: 'Introduction of the Subject', cnt: 1 },
+        { chNo: 2, ch: 'Indian Regulatory Framework', cnt: 4 },
+        { chNo: 3, ch: 'The Indian Partnership Act, 1932', cnt: 17 },
+        { chNo: 4, ch: 'The Sale of Goods Act, 1930', cnt: 16 },
+        { chNo: 5, ch: 'The Companies Act, 2013', cnt: 18 },
+        { chNo: 6, ch: 'The Negotiable Instruments Act, 1881', cnt: 8 },
+        { chNo: 7, ch: 'The Limited Liability Partnership Act, 2008', cnt: 4 },
+        { chNo: 8, ch: 'The Indian Contract Act, 1872', cnt: 38 }
+      ];
+      let lawCur = new Date('2026-11-16T00:00:00');
+      lawChapters.forEach(c => {
+        for (let i = 1; i <= c.cnt; i++) {
+          while (lawCur.getDay() === 0 || (lawCur.getFullYear() === 2027 && lawCur.getMonth() === 0 && lawCur.getDate() === 26)) {
+            lawCur.setDate(lawCur.getDate() + 1);
+          }
+          const iso = `${lawCur.getFullYear()}-${String(lawCur.getMonth() + 1).padStart(2, '0')}-${String(lawCur.getDate()).padStart(2, '0')}`;
+          list.push({
+            id: `law-${c.chNo}-${i}`,
+            subjectId: 'laws',
+            chapterNo: c.chNo,
+            chapterName: c.ch,
+            topic: `Part ${i}`,
+            lectureNo: i,
+            date: iso,
+            faculty: 'Chaitanya Jain Sir',
+            timing: '8:30am - 10:30am',
+            status: 'pending'
+          });
+          lawCur.setDate(lawCur.getDate() + 1);
+        }
+      });
+
+      // 3. QUANTITATIVE APTITUDE (96 Lectures — Strictly Mon-Fri from 16 Nov 2026 to 29 Mar 2027)
+      const qaChapters = [
+        { chNo: 1, ch: 'Mathematics of Finance', cnt: 13 },
+        { chNo: 2, ch: 'Ratio and Proportion, Indices, Logarithm', cnt: 10 },
+        { chNo: 3, ch: 'Measures of Central Tendency and Dispersion', cnt: 12 },
+        { chNo: 4, ch: 'Correlation and Regression', cnt: 7 },
+        { chNo: 5, ch: 'Number Series, Coding Decoding and Odd Man Out', cnt: 2 },
+        { chNo: 6, ch: 'Direction Test', cnt: 3 },
+        { chNo: 7, ch: 'Blood Relation', cnt: 2 },
+        { chNo: 8, ch: 'Seating Arrangement', cnt: 2 },
+        { chNo: 9, ch: 'Index Number', cnt: 5 },
+        { chNo: 10, ch: 'Statistical Description of Data', cnt: 4 },
+        { chNo: 11, ch: 'Equations', cnt: 6 },
+        { chNo: 12, ch: 'Inequalities', cnt: 2 },
+        { chNo: 13, ch: 'Permutation and Combination', cnt: 6 },
+        { chNo: 14, ch: 'Sequence and Series', cnt: 3 },
+        { chNo: 15, ch: 'Sets, Relation and Functions', cnt: 5 },
+        { chNo: 16, ch: 'Probability', cnt: 4 },
+        { chNo: 17, ch: 'Theoretical Distributions', cnt: 3 },
+        { chNo: 18, ch: 'Sampling', cnt: 3 },
+        { chNo: 19, ch: 'Basic Concepts of Differential and Integral Calculus', cnt: 4 }
+      ];
+      const qaDates = genDates('2026-11-16', 96);
+      let qaIdx = 0;
+      qaChapters.forEach(c => {
+        for (let i = 1; i <= c.cnt; i++) {
+          list.push({
+            id: `qa-${c.chNo}-${i}`,
+            subjectId: 'quant',
+            chapterNo: c.chNo,
+            chapterName: c.ch,
+            topic: `Part ${i}`,
+            lectureNo: i,
+            date: qaDates[qaIdx++],
+            faculty: 'Anurag Chauhan Sir',
+            timing: '6:00pm - 7:30pm',
+            status: 'pending'
+          });
+        }
+      });
+
+      // 4. BUSINESS ECONOMICS (90 Lectures — Exact PDF sequence ending 04 Apr 2027)
+      const ecoChapters = [
+        { chNo: 1, ch: 'Nature and Scope of Business Economics', dates: ['2026-11-16','2026-11-17','2026-11-18','2026-11-19','2026-11-23'] },
+        { chNo: 2, ch: 'Business Cycles', dates: ['2026-11-24','2026-11-25','2026-11-26','2026-11-30'] },
+        { chNo: 3, ch: 'Theory of Demand and Supply', dates: ['2026-12-01','2026-12-02','2026-12-03','2026-12-07','2026-12-08','2026-12-09','2026-12-10','2026-12-14','2026-12-15','2026-12-16','2026-12-17','2026-12-21','2026-12-22','2026-12-23','2026-12-24','2026-12-28'] },
+        { chNo: 4, ch: 'Theory of Production and Cost', dates: ['2026-12-29','2026-12-30','2026-12-31','2027-01-04','2027-01-05','2027-01-06','2027-01-07','2027-01-11','2027-01-12','2027-01-13'] },
+        { chNo: 5, ch: 'Price Determination in Different Markets', dates: ['2027-01-14','2027-01-18','2027-01-19','2027-01-20','2027-01-21','2027-01-25','2027-01-26','2027-01-27','2027-01-28'] },
+        { chNo: 6, ch: 'Determination of National Income', dates: ['2027-02-01','2027-02-02','2027-02-03','2027-02-04','2027-02-08','2027-02-09','2027-02-10','2027-02-11','2027-02-12','2027-02-15','2027-02-16','2027-02-17','2027-02-18','2027-02-19','2027-02-22'] },
+        { chNo: 7, ch: 'Public Finance', dates: ['2027-02-23','2027-02-24','2027-02-25','2027-02-26','2027-03-01','2027-03-02','2027-03-03','2027-03-04','2027-03-05','2027-03-08'] },
+        { chNo: 8, ch: 'Money Market', dates: ['2027-03-09','2027-03-10','2027-03-11','2027-03-12','2027-03-15','2027-03-16'] },
+        { chNo: 9, ch: 'International Trade', dates: ['2027-03-17','2027-03-18','2027-03-19','2027-03-22','2027-03-23','2027-03-24','2027-03-25','2027-03-26','2027-03-29','2027-03-30'] },
+        { chNo: 10, ch: 'Indian Economy', dates: ['2027-03-31','2027-04-01','2027-04-02','2027-04-03','2027-04-04'] }
+      ];
+      ecoChapters.forEach(c => {
+        c.dates.forEach((d, i) => {
+          list.push({
+            id: `eco-${c.chNo}-${i + 1}`,
+            subjectId: 'economics',
+            chapterNo: c.chNo,
+            chapterName: c.ch,
+            topic: `Lecture ${i + 1}`,
+            lectureNo: i + 1,
+            date: d,
+            faculty: 'Love Kaushik Sir',
+            timing: '12:00pm - 1:30pm',
+            status: 'pending'
+          });
+        });
+      });
+
+      return list;
+    }
+
+    function loadInitialState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('ca_sampurna_may_2027_v1');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          // Sync corrected PDF dates while preserving completed status
+          const freshMap = new Map(buildInitialLectures().map(l => [l.id, l]));
+          if (Array.isArray(parsed.lectures)) {
+            parsed.lectures = parsed.lectures.map(l => {
+              const fresh = freshMap.get(l.id);
+              return fresh ? { ...l, date: fresh.date, chapterName: fresh.chapterName, timing: fresh.timing } : l;
+            });
+          }
+          return parsed;
+        }
+      } catch (e) {}
+      return {
+        darkMode: true,
+        examDate: '2027-05-15T09:00:00',
+        dailyTargetHours: 8,
+        meetLink: 'https://meet.google.com/landing',
+        lectures: buildInitialLectures(),
+        notes: [],
+        dpps: [],
+        exercises: [],
+        mistakes: [],
+        revisions: [],
+        flashcards: [
+          {
+            id: 'fc-1',
+            subjectId: 'laws',
+            chapterName: 'The Indian Contract Act, 1872',
+            concept: 'Essential Elements of a Valid Contract (Section 10)',
+            explanation: 'All agreements are contracts if they are made by free consent of parties competent to contract, for a lawful consideration and with a lawful object, and are not expressly declared void.',
+            points: ['Offer + Acceptance = Promise', 'Lawful Consideration (Quid Pro Quo)', 'Capacity of Parties (Sec 11)', 'Free Consent (Sec 14)'],
+            formulaOrSection: 'Section 2(h) & Section 10, Indian Contract Act, 1872',
+            question: 'Is an agreement made with a minor void-ab-initio or voidable? State the landmark case law.',
+            revised: false
+          },
+          {
+            id: 'fc-2',
+            subjectId: 'quant',
+            chapterName: 'Mathematics of Finance',
+            concept: 'Effective Rate of Interest (E)',
+            explanation: 'Actual annual rate of interest earned when compounding takes place more than once a year.',
+            points: ['E increases with compounding frequency', 'For annual compounding, E = nominal rate i'],
+            formulaOrSection: 'E = (1 + i/k)^k - 1',
+            question: 'Find the effective rate equivalent to a nominal rate of 8% p.a. compounded quarterly.',
+            revised: false
+          }
+        ],
+        focusSessions: [],
+        paperRecords: {},
+        dailyTasks: [
+          { id: 'dt-1', text: 'Complete 2 Scheduled Lectures & update planner', completed: false },
+          { id: 'dt-2', text: 'Solve 1 Chapter DPP & log score', completed: false },
+          { id: 'dt-3', text: 'Practise 30 Quantitative Aptitude MCQs', completed: false },
+          { id: 'dt-4', text: 'Revise 1 Business Laws section & case law', completed: false }
+        ]
+      };
+    }
+
+    function App() {
+      const [state, setState] = useState(loadInitialState);
+      const [activeTab, setActiveTab] = useState('dashboard');
+      const [selectedSubject, setSelectedSubject] = useState('accounting');
+      const [selectedChapter, setSelectedChapter] = useState(null);
+      const [sidebarOpen, setSidebarOpen] = useState(false);
+      const [lastSavedTime, setLastSavedTime] = useState(() => new Date().toLocaleTimeString('en-IN'));
+      const [now, setNow] = useState(new Date());
+
+      useEffect(() => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          setLastSavedTime(new Date().toLocaleTimeString('en-IN'));
+        } catch (e) {}
+      }, [state]);
+
+      useEffect(() => {
+        const t = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(t);
+      }, []);
+
+      const todayISO = getTodayKolkataISO();
+
+      const chapterListBySubject = useMemo(() => {
+        const map = { accounting: [], laws: [], quant: [], economics: [] };
+        SUBJECTS.forEach(s => {
+          const subLecs = state.lectures.filter(l => l.subjectId === s.id);
+          const chMap = new Map();
+          subLecs.forEach(l => {
+            if (!chMap.has(l.chapterName)) {
+              chMap.set(l.chapterName, { chapterNo: l.chapterNo, chapterName: l.chapterName, lectures: [] });
+            }
+            chMap.get(l.chapterName).lectures.push(l);
+          });
+          map[s.id] = Array.from(chMap.values()).sort((a, b) => a.chapterNo - b.chapterNo).map(ch => {
+            const totalLecs = ch.lectures.length;
+            const compLecs = ch.lectures.filter(x => x.status === 'completed').length;
+            const chNotes = state.notes.filter(n => n.subjectId === s.id && n.chapterName === ch.chapterName);
+            const chDpps = state.dpps.filter(d => d.subjectId === s.id && d.chapterName === ch.chapterName);
+            const chEx = state.exercises.filter(e => e.subjectId === s.id && e.chapterName === ch.chapterName);
+            const pct = totalLecs > 0 ? Math.round((compLecs / totalLecs) * 100) : 0;
+            return { ...ch, totalLecs, compLecs, notesCount: chNotes.length, dppsCount: chDpps.length, exCount: chEx.length, pct };
+          });
+        });
+        return map;
+      }, [state.lectures, state.notes, state.dpps, state.exercises]);
+
+      const subjectStats = useMemo(() => {
+        const res = {};
+        SUBJECTS.forEach(s => {
+          const chs = chapterListBySubject[s.id] || [];
+          const totalChapters = chs.length;
+          const completedChapters = chs.filter(c => c.totalLecs > 0 && c.compLecs === c.totalLecs).length;
+          const totalLecs = chs.reduce((acc, c) => acc + c.totalLecs, 0);
+          const compLecs = chs.reduce((acc, c) => acc + c.compLecs, 0);
+          const pct = totalLecs > 0 ? Math.round((compLecs / totalLecs) * 100) : 0;
+          res[s.id] = { totalChapters, completedChapters, totalLecs, compLecs, pct };
+        });
+        return res;
+      }, [chapterListBySubject]);
+
+      const overallStats = useMemo(() => {
+        const totalLecs = state.lectures.length;
+        const completedLecs = state.lectures.filter(l => l.status === 'completed').length;
+        const missedLecs = state.lectures.filter(l => l.status === 'missed' || (l.status === 'pending' && l.date !== 'Recorded' && l.date < todayISO)).length;
+        let totalChapters = 0, completedChapters = 0;
+        SUBJECTS.forEach(s => {
+          totalChapters += subjectStats[s.id].totalChapters;
+          completedChapters += subjectStats[s.id].completedChapters;
+        });
+        const pct = totalLecs > 0 ? Math.round((completedLecs / totalLecs) * 100) : 0;
+        return { totalLecs, completedLecs, pendingLecs: totalLecs - completedLecs, missedLecs, totalChapters, completedChapters, pct };
+      }, [state.lectures, subjectStats, todayISO]);
+
+      const toggleLectureComplete = (lectureId) => {
+        setState(prev => {
+          const updatedLectures = prev.lectures.map(l => {
+            if (l.id !== lectureId) return l;
+            const nextStatus = l.status === 'completed' ? (l.date === 'Recorded' ? 'recorded' : 'pending') : 'completed';
+            return { ...l, status: nextStatus };
+          });
+          const target = updatedLectures.find(l => l.id === lectureId);
+          let nextRevisions = [...prev.revisions];
+          if (target && target.status === 'completed') {
+            const chLecs = updatedLectures.filter(l => l.subjectId === target.subjectId && l.chapterName === target.chapterName);
+            if (chLecs.every(l => l.status === 'completed')) {
+              const exists = nextRevisions.some(r => r.subjectId === target.subjectId && r.chapterName === target.chapterName);
+              if (!exists) {
+                const addDays = (days) => {
+                  const dt = new Date();
+                  dt.setDate(dt.getDate() + days);
+                  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+                };
+                nextRevisions.push({
+                  id: `rev-${Date.now()}`,
+                  subjectId: target.subjectId,
+                  chapterName: target.chapterName,
+                  r1Date: addDays(1), r1Done: false,
+                  r2Date: addDays(7), r2Done: false,
+                  r3Date: addDays(30), r3Done: false
+                });
+              }
+            }
+          }
+          return { ...prev, lectures: updatedLectures, revisions: nextRevisions };
+        });
+      };
+
+      const updateLectureStatus = (lectureId, status, newDate) => {
+        setState(prev => ({
+          ...prev,
+          lectures: prev.lectures.map(l => l.id === lectureId ? { ...l, status, date: newDate || l.date } : l)
+        }));
+      };
+
+      const examTarget = new Date(state.examDate);
+      const diffMs = Math.max(0, examTarget.getTime() - now.getTime());
+      const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const hoursLeft = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+      const minsLeft = Math.floor((diffMs / (1000 * 60)) % 60);
+      const secsLeft = Math.floor((diffMs / 1000) % 60);
+
+      const themeBg = state.darkMode ? 'bg-[#0B0B0F] text-white' : 'bg-slate-50 text-slate-900';
+      const cardBg = state.darkMode ? 'bg-[#14141B] border-[#262635]' : 'bg-white border-slate-200 shadow-sm';
+      const subText = state.darkMode ? 'text-zinc-400' : 'text-slate-500';
+
+      const navItems = [
+        { id: 'dashboard', label: '1. Dashboard' },
+        { id: 'schedule', label: '2. Lecture Schedule' },
+        { id: 'syllabus', label: '3. Syllabus Tracker' },
+        { id: 'subjects', label: '4. Subjects (4 Papers)' },
+        { id: 'materials', label: '5. Study Materials' },
+        { id: 'revision', label: '6. Revision Centre' },
+        { id: 'timer', label: '7. Focus Timer' },
+        { id: 'mtprtp', label: '8. MTP & RTP' },
+        { id: 'backlog', label: '9. Backlog Manager' },
+        { id: 'analytics', label: '10. Analytics' },
+        { id: 'meet', label: '11. Silent Study Meet' },
+        { id: 'settings', label: '12. Settings' },
+      ];
+
+      return (
+        <div className={`min-h-screen flex ${themeBg}`}>
+          {/* Mobile Backdrop */}
+          {sidebarOpen && <div className="fixed inset-0 bg-black/70 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+
+          {/* Sidebar */}
+          <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-64 border-r transition-transform duration-200 flex flex-col ${state.darkMode ? 'bg-[#101017] border-[#222230]' : 'bg-white border-slate-200'} ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+            <div className="p-5 border-b border-[#222230]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center font-extrabold text-white shadow-lg shadow-purple-600/30">CA</div>
+                <div>
+                  <h1 className="font-bold text-sm tracking-wide">SAMPURNA MAY 2027</h1>
+                  <p className="text-[11px] text-purple-400 font-medium">CA. Beeresh • Planner</p>
+                </div>
+              </div>
+            </div>
+
+            <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+              {navItems.map(item => (
+                <div key={item.id}>
+                  <button
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      if (item.id === 'subjects') setSelectedChapter(null);
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${
+                      activeTab === item.id
+                        ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25'
+                        : `${subText} hover:bg-purple-500/10 hover:text-purple-400`
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    {item.id === 'backlog' && overallStats.missedLecs > 0 && (
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/20 text-rose-400">{overallStats.missedLecs}</span>
+                    )}
+                  </button>
+                  {item.id === 'subjects' && (
+                    <div className="ml-4 mt-1 space-y-1 border-l border-[#262635] pl-2.5">
+                      {SUBJECTS.map(sub => (
+                        <button
+                          key={sub.id}
+                          onClick={() => {
+                            setSelectedSubject(sub.id);
+                            setSelectedChapter(null);
+                            setActiveTab('subjects');
+                            setSidebarOpen(false);
+                          }}
+                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors flex justify-between items-center ${
+                            activeTab === 'subjects' && selectedSubject === sub.id
+                              ? 'text-purple-400 font-semibold bg-purple-500/10'
+                              : `${subText} hover:text-purple-300`
+                          }`}
+                        >
+                          <span className="truncate">{sub.name}</span>
+                          <span className="text-[10px] opacity-75">{subjectStats[sub.id].pct}%</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </nav>
+
+            <div className="p-4 border-t border-[#222230] text-xs space-y-2">
+              <div className="flex justify-between">
+                <span className={subText}>Overall Syllabus</span>
+                <span className="font-bold text-purple-400">{overallStats.pct}%</span>
+              </div>
+              <div className="w-full h-1.5 bg-[#222230] rounded-full overflow-hidden">
+                <div className="h-full bg-purple-600 rounded-full transition-all duration-500" style={{ width: `${overallStats.pct}%` }} />
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Area */}
+          <div className="flex-1 flex flex-col min-w-0">
+            <header className={`sticky top-0 z-20 px-5 py-3.5 border-b backdrop-blur-md flex items-center justify-between gap-3 ${state.darkMode ? 'bg-[#0B0B0F]/90 border-[#222230]' : 'bg-white/90 border-slate-200'}`}>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 rounded-lg border border-[#262635] text-zinc-300">☰</button>
+                <div>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <h2 className="font-extrabold text-sm sm:text-base tracking-tight">CA FOUNDATION – SAMPURNA MAY 2027</h2>
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      Auto-Saved ({lastSavedTime})
+                    </span>
+                  </div>
+                  <p className={`text-xs ${subText}`}>Plan Smart. Study Consistently. Become a CA.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setState(p => ({ ...p, darkMode: !p.darkMode }))}
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-[#262635] hover:border-purple-500 transition-colors"
+                >
+                  {state.darkMode ? '☀ Light' : '🌙 Dark'}
+                </button>
+              </div>
+            </header>
+
+            <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto animate-view-enter">
+              {activeTab === 'dashboard' && (
+                <DashboardView
+                  state={state} setState={setState} cardBg={cardBg} subText={subText}
+                  todayISO={todayISO} daysLeft={daysLeft} hoursLeft={hoursLeft} minsLeft={minsLeft} secsLeft={secsLeft}
+                  subjectStats={subjectStats} overallStats={overallStats}
+                  toggleLectureComplete={toggleLectureComplete}
+                  onOpenSubject={(id) => { setSelectedSubject(id); setSelectedChapter(null); setActiveTab('subjects'); }}
+                  onNavigate={setActiveTab}
+                />
+              )}
+
+              {activeTab === 'subjects' && !selectedChapter && (
+                <SubjectDashboardView
+                  subjectId={selectedSubject} setSubjectId={setSelectedSubject}
+                  chapters={chapterListBySubject[selectedSubject] || []}
+                  stat={subjectStats[selectedSubject]}
+                  cardBg={cardBg} subText={subText}
+                  onSelectChapter={(ch) => setSelectedChapter(ch.chapterName)}
+                />
+              )}
+
+              {activeTab === 'subjects' && selectedChapter && (
+                <ChapterWorkspaceView
+                  subjectId={selectedSubject} chapterName={selectedChapter}
+                  state={state} setState={setState} cardBg={cardBg} subText={subText}
+                  toggleLectureComplete={toggleLectureComplete}
+                  onBack={() => setSelectedChapter(null)}
+                />
+              )}
+
+              {activeTab === 'schedule' && (
+                <LectureScheduleView
+                  state={state} setState={setState} cardBg={cardBg} subText={subText}
+                  todayISO={todayISO} toggleLectureComplete={toggleLectureComplete} updateLectureStatus={updateLectureStatus}
+                />
+              )}
+
+              {activeTab === 'syllabus' && (
+                <SyllabusTrackerView
+                  subjectStats={subjectStats} overallStats={overallStats} cardBg={cardBg} subText={subText}
+                  onOpenSubject={(id) => { setSelectedSubject(id); setSelectedChapter(null); setActiveTab('subjects'); }}
+                />
+              )}
+
+              {activeTab === 'materials' && (
+                <StudyMaterialsView state={state} setState={setState} cardBg={cardBg} subText={subText} />
+              )}
+
+              {activeTab === 'revision' && (
+                <RevisionCentreView state={state} setState={setState} cardBg={cardBg} subText={subText} />
+              )}
+
+              {activeTab === 'timer' && (
+                <FocusTimerView state={state} setState={setState} cardBg={cardBg} subText={subText} todayISO={todayISO} />
+              )}
+
+              {activeTab === 'mtprtp' && (
+                <MtpRtpView state={state} setState={setState} cardBg={cardBg} subText={subText} />
+              )}
+
+              {activeTab === 'backlog' && (
+                <BacklogManagerView
+                  state={state} setState={setState} cardBg={cardBg} subText={subText}
+                  todayISO={todayISO} toggleLectureComplete={toggleLectureComplete}
+                />
+              )}
+
+              {activeTab === 'analytics' && (
+                <AnalyticsView state={state} subjectStats={subjectStats} overallStats={overallStats} cardBg={cardBg} subText={subText} todayISO={todayISO} />
+              )}
+
+              {activeTab === 'meet' && (
+                <GoogleMeetRoomView state={state} setState={setState} cardBg={cardBg} subText={subText} />
+              )}
+
+              {activeTab === 'settings' && (
+                <SettingsView state={state} setState={setState} cardBg={cardBg} subText={subText} />
+              )}
+            </main>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 1. MAIN DASHBOARD (With Risk Predictor & What-If Simulator)
+    // ============================================================================
+    function DashboardView({ state, setState, cardBg, subText, todayISO, daysLeft, hoursLeft, minsLeft, secsLeft, subjectStats, overallStats, toggleLectureComplete, onOpenSubject, onNavigate }) {
+      const [selectedDate, setSelectedDate] = useState(todayISO);
+      const [simRate, setSimRate] = useState(3);
+      const [newTaskText, setNewTaskText] = useState('');
+
+      const dayLectures = state.lectures.filter(l => l.date === selectedDate);
+      const pendingDpps = state.dpps.filter(d => !d.completed).length;
+      const pendingRevs = state.revisions.filter(r => !r.r1Done || !r.r2Done || !r.r3Done).length;
+
+      // Preparation Pace & Risk Calculation
+      const dueByToday = state.lectures.filter(l => l.date !== 'Recorded' && l.date <= todayISO).length + 15;
+      const completed = overallStats.completedLecs;
+      const gap = dueByToday - completed;
+      const riskStatus = gap <= 3 ? 'SAFE' : gap <= 15 ? 'MODERATE RISK' : 'AT RISK';
+      const riskColor = gap <= 3 ? 'emerald' : gap <= 15 ? 'amber' : 'rose';
+
+      const daysToApr15 = Math.max(1, Math.ceil((new Date('2027-04-15') - new Date(todayISO)) / (1000 * 60 * 60 * 24)));
+      const reqVelocity = (overallStats.pendingLecs / daysToApr15).toFixed(1);
+
+      const simDaysNeeded = Math.ceil(overallStats.pendingLecs / Math.max(1, simRate));
+      const simFinish = new Date(todayISO + 'T00:00:00');
+      simFinish.setDate(simFinish.getDate() + simDaysNeeded);
+      const simFinishISO = `${simFinish.getFullYear()}-${String(simFinish.getMonth() + 1).padStart(2, '0')}-${String(simFinish.getDate()).padStart(2, '0')}`;
+
+      const addDailyTask = (e) => {
+        e.preventDefault();
+        if (!newTaskText.trim()) return;
+        setState(p => ({ ...p, dailyTasks: [...p.dailyTasks, { id: `dt-${Date.now()}`, text: newTaskText.trim(), completed: false }] }));
+        setNewTaskText('');
+      };
+
+      const taskPct = state.dailyTasks.length > 0 ? Math.round((state.dailyTasks.filter(t => t.completed).length / state.dailyTasks.length) * 100) : 0;
+
+      return (
+        <div className="space-y-6">
+          {/* Top Banner & Countdown */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className={`lg:col-span-2 p-6 rounded-2xl border ${cardBg} flex flex-col justify-between`}>
+              <div>
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-600/20 text-purple-400">Welcome back, CA. Beeresh</span>
+                <h2 className="text-2xl font-extrabold mt-3">CA Foundation Sampurna May 2027</h2>
+                <p className={`text-sm mt-1 ${subText}`}>Today: <span className="text-white font-semibold">{formatDateDDMMMYYYY(todayISO)}</span> • Daily Study Target: <span className="text-purple-400 font-bold">{state.dailyTargetHours} Hours</span></p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+                <button onClick={() => onNavigate('schedule')} className="p-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs text-center transition">📅 Lecture Schedule</button>
+                <button onClick={() => onNavigate('timer')} className="p-3 rounded-xl bg-[#1D1D27] hover:border-purple-500 border border-[#2C2C3C] font-semibold text-xs text-center transition">⏱ Focus Timer</button>
+                <button onClick={() => onNavigate('revision')} className="p-3 rounded-xl bg-[#1D1D27] hover:border-purple-500 border border-[#2C2C3C] font-semibold text-xs text-center transition">🧠 Revision ({pendingRevs})</button>
+                <button onClick={() => onNavigate('materials')} className="p-3 rounded-xl bg-[#1D1D27] hover:border-purple-500 border border-[#2C2C3C] font-semibold text-xs text-center transition">📚 Study Materials</button>
+              </div>
+            </div>
+
+            <div className={`p-6 rounded-2xl border ${cardBg} flex flex-col justify-between bg-gradient-to-br from-[#161424] to-[#111118]`}>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-purple-400">May 2027 Exam Countdown</p>
+                <p className={`text-xs mt-0.5 ${subText}`}>Target: {formatDateDDMMMYYYY(state.examDate.slice(0, 10))}</p>
+              </div>
+              <div className="grid grid-cols-4 gap-2 my-4 text-center">
+                {[['Days', daysLeft], ['Hrs', hoursLeft], ['Min', minsLeft], ['Sec', secsLeft]].map(([lbl, val]) => (
+                  <div key={lbl} className="p-2.5 rounded-xl bg-[#0B0B0F] border border-[#262635]">
+                    <div className="text-xl sm:text-2xl font-extrabold text-white">{String(val).padStart(2, '0')}</div>
+                    <div className="text-[10px] uppercase text-purple-400 font-semibold">{lbl}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-emerald-400 font-medium text-center">"Consistency turns an aspirant into a Chartered Accountant."</p>
+            </div>
+          </div>
+
+          {/* Preparation Pace & Risk Predictor */}
+          <div className={`p-5 rounded-2xl border ${cardBg}`}>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#262635]">
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <h3 className="font-bold text-base">Preparation Pace & Risk Predictor</h3>
+                  <span className={`px-3 py-0.5 rounded-full text-xs font-extrabold bg-${riskColor}-500/20 text-${riskColor}-400 border border-${riskColor}-500/40`}>
+                    {riskStatus}
+                  </span>
+                </div>
+                <p className={`text-xs mt-1 ${subText}`}>
+                  Completed <strong className="text-white">{completed}</strong> / {overallStats.totalLecs} lectures • Required pace to finish by 15 Apr 2027: <strong className="text-purple-400">{reqVelocity} lectures/day</strong>
+                </p>
+              </div>
+              <div className="flex items-center gap-3 bg-[#0B0B0F] px-4 py-2.5 rounded-xl border border-[#262635]">
+                <span className="text-xs text-zinc-400">What-If Pace:</span>
+                <input type="range" min="1" max="8" value={simRate} onChange={e => setSimRate(Number(e.target.value))} className="accent-purple-600 w-24" />
+                <span className="text-xs font-bold text-purple-400">{simRate}/day</span>
+                <span className="text-xs text-zinc-300">→ Done: <strong>{formatDateDDMMMYYYY(simFinishISO)}</strong></span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+              {SUBJECTS.map(s => {
+                const st = subjectStats[s.id];
+                const subDue = state.lectures.filter(l => l.subjectId === s.id && l.date !== 'Recorded' && l.date <= todayISO).length;
+                const subSafe = st.compLecs >= subDue;
+                return (
+                  <div key={s.id} className="p-3 rounded-xl bg-[#0E0E14] border border-[#222230] flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold">{s.name}</p>
+                      <p className="text-[11px] text-zinc-400">{st.compLecs}/{st.totalLecs} Lecs</p>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${subSafe ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}`}>
+                      {subSafe ? 'SAFE' : 'BEHIND'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Four Subject Cards */}
+          <div>
+            <h3 className="font-bold text-base mb-3">Preparation Overview (Click Subject to Open Chapters)</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {SUBJECTS.map(s => {
+                const st = subjectStats[s.id];
+                return (
+                  <div
+                    key={s.id}
+                    onClick={() => onOpenSubject(s.id)}
+                    className={`p-5 rounded-2xl border ${cardBg} card-interactive cursor-pointer hover:border-purple-500`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-[11px] font-bold uppercase text-purple-400">{s.code}</span>
+                        <h4 className="font-bold text-base mt-0.5">{s.name}</h4>
+                      </div>
+                      <span className="text-lg font-extrabold text-purple-400">{st.pct}%</span>
+                    </div>
+                    <p className={`text-xs mt-3 ${subText}`}>
+                      Chapters: <strong className="text-white">{st.completedChapters}</strong> / {st.totalChapters} • Lecs: {st.compLecs}/{st.totalLecs}
+                    </p>
+                    <div className="w-full h-2 bg-[#222230] rounded-full overflow-hidden mt-3">
+                      <div className="h-full bg-purple-600 rounded-full transition-all duration-500" style={{ width: `${st.pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Today's Lectures & Daily Mission */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className={`lg:col-span-2 p-5 rounded-2xl border ${cardBg}`}>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div>
+                  <h3 className="font-bold text-base">Today's Scheduled Lectures</h3>
+                  <p className={`text-xs ${subText}`}>Schedule for {formatDateDDMMMYYYY(selectedDate)} • Pending DPPs: {pendingDpps}</p>
+                </div>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={e => setSelectedDate(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs font-semibold text-white"
+                />
+              </div>
+
+              {dayLectures.length === 0 ? (
+                <div className="p-8 text-center rounded-xl bg-[#0E0E14] border border-dashed border-[#262635]">
+                  <p className="text-sm font-semibold">No live lectures scheduled for {formatDateDDMMMYYYY(selectedDate)}</p>
+                  <p className={`text-xs mt-1 ${subText}`}>Use this day to watch Recorded Accounting lectures, solve DPPs, or revise.</p>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {dayLectures.map(l => {
+                    const sub = SUBJECTS.find(s => s.id === l.subjectId);
+                    const isDone = l.status === 'completed';
+                    return (
+                      <div key={l.id} className="p-3.5 rounded-xl bg-[#0E0E14] border border-[#222230] flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-[11px] font-bold uppercase text-purple-400">{sub?.name} • {l.timing}</div>
+                          <div className={`text-sm font-bold mt-0.5 ${isDone ? 'line-through text-zinc-500' : ''}`}>
+                            {l.chapterName} — Lec {l.lectureNo}
+                          </div>
+                          <div className="text-xs text-zinc-400">{l.topic} • {l.faculty}</div>
+                        </div>
+                        <button
+                          onClick={() => toggleLectureComplete(l.id)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+                            isDone ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-[#1C1C26] hover:bg-purple-600 text-white'
+                          }`}
+                        >
+                          {isDone ? '✓ Completed' : 'Mark Done'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Daily Mission */}
+            <div className={`p-5 rounded-2xl border ${cardBg} flex flex-col justify-between`}>
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-bold text-base">Daily Mission</h3>
+                  <span className="text-xs font-extrabold text-emerald-400">{taskPct}% Done</span>
+                </div>
+                <div className="w-full h-1.5 bg-[#222230] rounded-full overflow-hidden mb-4">
+                  <div className="h-full bg-emerald-500 transition-all" style={{ width: `${taskPct}%` }} />
+                </div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {state.dailyTasks.map(t => (
+                    <label key={t.id} className="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#0E0E14] border border-[#222230] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={t.completed}
+                        onChange={() => setState(p => ({ ...p, dailyTasks: p.dailyTasks.map(x => x.id === t.id ? { ...x, completed: !x.completed } : x) }))}
+                        className="mt-0.5 accent-purple-600"
+                      />
+                      <span className={`text-xs leading-relaxed ${t.completed ? 'line-through text-zinc-500' : ''}`}>{t.text}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <form onSubmit={addDailyTask} className="mt-4 flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add daily mission..."
+                  value={newTaskText}
+                  onChange={e => setNewTaskText(e.target.value)}
+                  className="flex-1 px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs"
+                />
+                <button type="submit" className="px-3 py-2 rounded-xl bg-purple-600 text-xs font-bold text-white">+</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 2. SUBJECT-WISE CHAPTER DASHBOARD (4-Column Grid)
+    // ============================================================================
+    function SubjectDashboardView({ subjectId, setSubjectId, chapters, stat, cardBg, subText, onSelectChapter }) {
+      const subject = SUBJECTS.find(s => s.id === subjectId);
+      return (
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              {SUBJECTS.map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => setSubjectId(s.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                    subjectId === s.id ? 'bg-purple-600 text-white' : `border border-[#262635] ${subText} hover:text-white`
+                  }`}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </div>
+            <div className="text-xs font-semibold text-purple-400">
+              {subject?.name}: {stat.completedChapters}/{stat.totalChapters} Chapters ({stat.pct}%)
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {chapters.map(ch => (
+              <div
+                key={ch.chapterName}
+                onClick={() => onSelectChapter(ch)}
+                className="p-5 rounded-2xl bg-[#13131A] border border-[#252534] hover:border-purple-500 card-interactive cursor-pointer flex flex-col justify-between"
+              >
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Chapter {ch.chapterNo}</span>
+                  <h3 className="font-bold text-sm uppercase tracking-wide text-white mt-1 leading-snug">{ch.chapterName}</h3>
+                  <p className="text-xs font-semibold text-purple-400 mt-3">
+                    {ch.totalLecs} Lectures | {ch.notesCount} Notes | {ch.dppsCount} DPP | {ch.exCount} Exercises
+                  </p>
+                </div>
+                <div className="mt-5">
+                  <div className="flex justify-between text-[11px] mb-1.5">
+                    <span className="text-zinc-400">Progress ({ch.compLecs}/{ch.totalLecs})</span>
+                    <span className="font-bold text-white">{ch.pct}%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-[#222230] rounded-full overflow-hidden">
+                    <div className="h-full bg-purple-600 rounded-full transition-all duration-300" style={{ width: `${ch.pct}%` }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // CHAPTER WORKSPACE (5 Tabs: Lectures, Notes, DPP, Exercises, Revision)
+    // ============================================================================
+    function ChapterWorkspaceView({ subjectId, chapterName, state, setState, cardBg, subText, toggleLectureComplete, onBack }) {
+      const [tab, setTab] = useState('lectures');
+      const [noteTitle, setNoteTitle] = useState('');
+      const [noteContent, setNoteContent] = useState('');
+      const [dppTitle, setDppTitle] = useState('');
+      const [dppMarks, setDppMarks] = useState('');
+      const [exTitle, setExTitle] = useState('');
+      const [exAttempted, setExAttempted] = useState('');
+      const [exCorrect, setExCorrect] = useState('');
+
+      const lecs = state.lectures.filter(l => l.subjectId === subjectId && l.chapterName === chapterName);
+      const comp = lecs.filter(l => l.status === 'completed').length;
+      const pct = lecs.length > 0 ? Math.round((comp / lecs.length) * 100) : 0;
+
+      const chNotes = state.notes.filter(n => n.subjectId === subjectId && n.chapterName === chapterName);
+      const chDpps = state.dpps.filter(d => d.subjectId === subjectId && d.chapterName === chapterName);
+      const chEx = state.exercises.filter(e => e.subjectId === subjectId && e.chapterName === chapterName);
+      const chRev = state.revisions.find(r => r.subjectId === subjectId && r.chapterName === chapterName);
+
+      return (
+        <div className="space-y-5">
+          <div className={`p-5 rounded-2xl border ${cardBg} flex flex-wrap items-center justify-between gap-4`}>
+            <div>
+              <button onClick={onBack} className="text-xs font-bold text-purple-400 hover:underline mb-1">← Back to Chapters</button>
+              <h2 className="text-xl font-extrabold">{chapterName}</h2>
+              <p className={`text-xs ${subText}`}>{SUBJECTS.find(s => s.id === subjectId)?.name} • {comp}/{lecs.length} Lectures Completed ({pct}%)</p>
+            </div>
+            <div className="w-40">
+              <div className="w-full h-2 bg-[#222230] rounded-full overflow-hidden">
+                <div className="h-full bg-purple-600" style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {['lectures', 'notes', 'dpp', 'exercises', 'revision'].map(t => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase ${tab === t ? 'bg-purple-600 text-white' : `border border-[#262635] ${subText}`}`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+
+          {tab === 'lectures' && (
+            <div className="space-y-2.5">
+              {lecs.map(l => (
+                <div key={l.id} className={`p-4 rounded-xl border ${cardBg} flex items-center justify-between gap-3`}>
+                  <div>
+                    <div className="text-sm font-bold">Lecture {l.lectureNo}: {l.topic}</div>
+                    <div className={`text-xs ${subText}`}>{formatDateDDMMMYYYY(l.date)} • {l.timing} • {l.faculty}</div>
+                  </div>
+                  <button
+                    onClick={() => toggleLectureComplete(l.id)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold ${l.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-purple-600 text-white'}`}
+                  >
+                    {l.status === 'completed' ? '✓ Completed' : 'Mark Completed'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tab === 'notes' && (
+            <div className="space-y-4">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!noteTitle.trim()) return;
+                  setState(p => ({ ...p, notes: [...p.notes, { id: `n-${Date.now()}`, subjectId, chapterName, title: noteTitle, content: noteContent, date: getTodayKolkataISO() }] }));
+                  setNoteTitle(''); setNoteContent('');
+                }}
+                className={`p-4 rounded-2xl border ${cardBg} space-y-3`}
+              >
+                <h4 className="font-bold text-sm">Add Chapter Note / Summary</h4>
+                <input value={noteTitle} onChange={e => setNoteTitle(e.target.value)} placeholder="Note title (e.g. Class Handwritten Notes)" className="w-full px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+                <textarea value={noteContent} onChange={e => setNoteContent(e.target.value)} placeholder="Key formulas, sections, or Google Drive link..." rows="3" className="w-full px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+                <button type="submit" className="px-4 py-2 rounded-xl bg-purple-600 text-xs font-bold text-white">Save Note</button>
+              </form>
+              {chNotes.map(n => (
+                <div key={n.id} className={`p-4 rounded-xl border ${cardBg}`}>
+                  <div className="font-bold text-sm">{n.title}</div>
+                  <p className={`text-xs mt-1 whitespace-pre-wrap ${subText}`}>{n.content}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tab === 'dpp' && (
+            <div className="space-y-4">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!dppTitle.trim()) return;
+                  setState(p => ({ ...p, dpps: [...p.dpps, { id: `dpp-${Date.now()}`, subjectId, chapterName, title: dppTitle, marks: dppMarks, completed: true }] }));
+                  setDppTitle(''); setDppMarks('');
+                }}
+                className={`p-4 rounded-2xl border ${cardBg} flex flex-wrap gap-3`}
+              >
+                <input value={dppTitle} onChange={e => setDppTitle(e.target.value)} placeholder="DPP Name (e.g. DPP 01)" className="flex-1 px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+                <input value={dppMarks} onChange={e => setDppMarks(e.target.value)} placeholder="Marks (e.g. 18/20)" className="w-36 px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+                <button type="submit" className="px-4 py-2 rounded-xl bg-purple-600 text-xs font-bold text-white">+ Log DPP</button>
+              </form>
+              {chDpps.map(d => (
+                <div key={d.id} className={`p-4 rounded-xl border ${cardBg} flex justify-between items-center`}>
+                  <span className="text-sm font-bold">{d.title}</span>
+                  <span className="text-xs font-bold text-emerald-400">Score: {d.marks || 'Completed'}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tab === 'exercises' && (
+            <div className="space-y-4">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!exTitle.trim()) return;
+                  setState(p => ({ ...p, exercises: [...p.exercises, { id: `ex-${Date.now()}`, subjectId, chapterName, title: exTitle, attempted: Number(exAttempted) || 0, correct: Number(exCorrect) || 0 }] }));
+                  setExTitle(''); setExAttempted(''); setExCorrect('');
+                }}
+                className={`p-4 rounded-2xl border ${cardBg} flex flex-wrap gap-3`}
+              >
+                <input value={exTitle} onChange={e => setExTitle(e.target.value)} placeholder="Exercise (e.g. ICAI Module Ex 1)" className="flex-1 px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+                <input type="number" value={exAttempted} onChange={e => setExAttempted(e.target.value)} placeholder="Attempted" className="w-28 px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+                <input type="number" value={exCorrect} onChange={e => setExCorrect(e.target.value)} placeholder="Correct" className="w-28 px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+                <button type="submit" className="px-4 py-2 rounded-xl bg-purple-600 text-xs font-bold text-white">+ Add Practice</button>
+              </form>
+              {chEx.map(ex => {
+                const acc = ex.attempted > 0 ? Math.round((ex.correct / ex.attempted) * 100) : 0;
+                return (
+                  <div key={ex.id} className={`p-4 rounded-xl border ${cardBg} flex justify-between items-center`}>
+                    <span className="text-sm font-bold">{ex.title}</span>
+                    <span className="text-xs font-bold text-purple-400">{ex.correct}/{ex.attempted} ({acc}% Accuracy)</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {tab === 'revision' && (
+            <div className={`p-5 rounded-2xl border ${cardBg}`}>
+              {chRev ? (
+                <div className="space-y-3">
+                  <h4 className="font-bold text-sm">Spaced Repetition Schedule</h4>
+                  {[['Revision 1 (Day +1)', 'r1Date', 'r1Done'], ['Revision 2 (Day +7)', 'r2Date', 'r2Done'], ['Revision 3 (Day +30)', 'r3Date', 'r3Done']].map(([lbl, dKey, doneKey]) => (
+                    <div key={lbl} className="flex items-center justify-between p-3 rounded-xl bg-[#0E0E14] border border-[#222230]">
+                      <div>
+                        <div className="text-xs font-bold">{lbl}</div>
+                        <div className="text-[11px] text-zinc-400">{formatDateDDMMMYYYY(chRev[dKey])}</div>
+                      </div>
+                      <button
+                        onClick={() => setState(p => ({ ...p, revisions: p.revisions.map(r => r.id === chRev.id ? { ...r, [doneKey]: !r[doneKey] } : r) }))}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold ${chRev[doneKey] ? 'bg-emerald-500/20 text-emerald-400' : 'bg-purple-600 text-white'}`}
+                      >
+                        {chRev[doneKey] ? '✓ Revised' : 'Mark Revised'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className={`text-xs ${subText}`}>Complete all lectures in this chapter to automatically trigger 1-day, 7-day, and 30-day revision reminders.</p>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 3. LECTURE SCHEDULE
+    // ============================================================================
+    function LectureScheduleView({ state, setState, cardBg, subText, todayISO, toggleLectureComplete, updateLectureStatus }) {
+      const [subjectFilter, setSubjectFilter] = useState('all');
+      const [statusFilter, setStatusFilter] = useState('all');
+      const [search, setSearch] = useState('');
+      const [showAdd, setShowAdd] = useState(false);
+      const [newLec, setNewLec] = useState({ subjectId: 'accounting', chapterName: '', topic: '', date: todayISO, timing: '5:00pm - 6:30pm' });
+
+      const filtered = state.lectures.filter(l => {
+        if (subjectFilter !== 'all' && l.subjectId !== subjectFilter) return false;
+        if (statusFilter === 'completed' && l.status !== 'completed') return false;
+        if (statusFilter === 'pending' && l.status !== 'pending') return false;
+        if (statusFilter === 'recorded' && l.date !== 'Recorded') return false;
+        if (search && !`${l.chapterName} ${l.topic} ${l.faculty}`.toLowerCase().includes(search.toLowerCase())) return false;
+        return true;
+      });
+
+      const handleAddPersonal = (e) => {
+        e.preventDefault();
+        if (!newLec.chapterName.trim()) return;
+        setState(p => ({
+          ...p,
+          lectures: [{
+            id: `custom-${Date.now()}`,
+            subjectId: newLec.subjectId,
+            chapterNo: 99,
+            chapterName: newLec.chapterName.trim(),
+            topic: newLec.topic.trim() || 'Extra Session',
+            lectureNo: 1,
+            date: newLec.date,
+            faculty: 'Self / Extra Class',
+            timing: newLec.timing,
+            status: 'pending'
+          }, ...p.lectures]
+        }));
+        setShowAdd(false);
+        setNewLec({ subjectId: 'accounting', chapterName: '', topic: '', date: todayISO, timing: '5:00pm - 6:30pm' });
+      };
+
+      return (
+        <div className="space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-extrabold">Complete Lecture Schedule (402 Official Lectures)</h2>
+              <p className={`text-xs ${subText}`}>Filter by subject, status, search chapter, or reschedule missed lectures.</p>
+            </div>
+            <button onClick={() => setShowAdd(!showAdd)} className="px-4 py-2 rounded-xl bg-purple-600 text-xs font-bold text-white">+ Add Personal Lecture</button>
+          </div>
+
+          {showAdd && (
+            <form onSubmit={handleAddPersonal} className={`p-4 rounded-2xl border ${cardBg} grid grid-cols-1 sm:grid-cols-5 gap-3`}>
+              <select value={newLec.subjectId} onChange={e => setNewLec({ ...newLec, subjectId: e.target.value })} className="px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs">
+                {SUBJECTS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+              <input placeholder="Chapter Name" value={newLec.chapterName} onChange={e => setNewLec({ ...newLec, chapterName: e.target.value })} className="px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+              <input placeholder="Topic" value={newLec.topic} onChange={e => setNewLec({ ...newLec, topic: e.target.value })} className="px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+              <input type="date" value={newLec.date} onChange={e => setNewLec({ ...newLec, date: e.target.value })} className="px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+              <button type="submit" className="px-4 py-2 rounded-xl bg-emerald-600 text-xs font-bold text-white">Save Lecture</button>
+            </form>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            <input
+              type="text"
+              placeholder="Search chapter, topic or faculty..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="flex-1 min-w-[200px] px-3.5 py-2 rounded-xl bg-[#14141B] border border-[#262635] text-xs"
+            />
+            <select value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#14141B] border border-[#262635] text-xs">
+              <option value="all">All Subjects</option>
+              {SUBJECTS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#14141B] border border-[#262635] text-xs">
+              <option value="all">All Statuses ({state.lectures.length})</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="recorded">Recorded</option>
+            </select>
+          </div>
+
+          <div className={`rounded-2xl border ${cardBg} overflow-x-auto`}>
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-[#262635] text-zinc-400">
+                  <th className="p-3.5">Date</th>
+                  <th className="p-3.5">Subject</th>
+                  <th className="p-3.5">Chapter & Lecture</th>
+                  <th className="p-3.5">Faculty & Timing</th>
+                  <th className="p-3.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#222230]">
+                {filtered.slice(0, 150).map(l => {
+                  const sub = SUBJECTS.find(s => s.id === l.subjectId);
+                  const isDone = l.status === 'completed';
+                  return (
+                    <tr key={l.id} className="hover:bg-purple-500/5">
+                      <td className="p-3.5 font-semibold whitespace-nowrap">{formatDateDDMMMYYYY(l.date)}</td>
+                      <td className="p-3.5 text-purple-400 font-bold">{sub?.name}</td>
+                      <td className="p-3.5">
+                        <div className={`font-bold ${isDone ? 'line-through text-zinc-500' : ''}`}>{l.chapterName} — Lec {l.lectureNo}</div>
+                        <div className="text-zinc-400">{l.topic}</div>
+                      </td>
+                      <td className="p-3.5 text-zinc-400">{l.faculty} • {l.timing}</td>
+                      <td className="p-3.5 text-right whitespace-nowrap">
+                        <button
+                          onClick={() => toggleLectureComplete(l.id)}
+                          className={`px-3 py-1.5 rounded-lg font-bold ${isDone ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#1F1F2B] hover:bg-purple-600 text-white'}`}
+                        >
+                          {isDone ? '✓ Done' : 'Complete'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {filtered.length > 150 && (
+              <div className="p-3 text-center text-xs text-zinc-400 border-t border-[#262635]">
+                Showing first 150 of {filtered.length} matching lectures. Use Search or Subject filter to narrow down.
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 4. SYLLABUS COMPLETION TRACKER
+    // ============================================================================
+    function SyllabusTrackerView({ subjectStats, overallStats, cardBg, subText, onOpenSubject }) {
+      return (
+        <div className="space-y-6">
+          <div className={`p-6 rounded-2xl border ${cardBg}`}>
+            <h2 className="text-xl font-extrabold">Overall Syllabus Completion</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-4">
+              {[
+                ['Total Chapters', overallStats.totalChapters],
+                ['Completed Chapters', overallStats.completedChapters],
+                ['Pending Chapters', overallStats.totalChapters - overallStats.completedChapters],
+                ['Completed Lectures', `${overallStats.completedLecs}/${overallStats.totalLecs}`],
+                ['Overall Progress', `${overallStats.pct}%`]
+              ].map(([lbl, val]) => (
+                <div key={lbl} className="p-4 rounded-xl bg-[#0E0E14] border border-[#222230]">
+                  <div className="text-xs text-zinc-400">{lbl}</div>
+                  <div className="text-xl font-extrabold text-purple-400 mt-1">{val}</div>
+                </div>
+              ))}
+            </div>
+            <div className="w-full h-3 bg-[#222230] rounded-full overflow-hidden mt-5">
+              <div className="h-full bg-purple-600 transition-all duration-500" style={{ width: `${overallStats.pct}%` }} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {SUBJECTS.map(s => {
+              const st = subjectStats[s.id];
+              return (
+                <div key={s.id} onClick={() => onOpenSubject(s.id)} className={`p-5 rounded-2xl border ${cardBg} cursor-pointer hover:border-purple-500`}>
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold text-base">{s.name}</h3>
+                    <span className="text-lg font-extrabold text-purple-400">{st.pct}%</span>
+                  </div>
+                  <p className={`text-xs mt-2 ${subText}`}>
+                    Completed Chapters: <strong>{st.completedChapters}</strong> • Pending Chapters: <strong>{st.totalChapters - st.completedChapters}</strong> • Lectures: {st.compLecs}/{st.totalLecs}
+                  </p>
+                  <div className="w-full h-2 bg-[#222230] rounded-full overflow-hidden mt-3">
+                    <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${st.pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 5. STUDY MATERIALS
+    // ============================================================================
+    function StudyMaterialsView({ state, setState, cardBg, subText }) {
+      const [showModal, setShowModal] = useState(false);
+      const [form, setForm] = useState({ subjectId: 'accounting', chapterName: 'General', title: '', category: 'Notes', link: '' });
+
+      const addMaterial = (e) => {
+        e.preventDefault();
+        if (!form.title.trim()) return;
+        setState(p => ({ ...p, notes: [{ id: `mat-${Date.now()}`, ...form, content: form.link, date: getTodayKolkataISO() }, ...p.notes] }));
+        setForm({ subjectId: 'accounting', chapterName: 'General', title: '', category: 'Notes', link: '' });
+        setShowModal(false);
+      };
+
+      return (
+        <div className="space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-extrabold">Central Study Materials Hub</h2>
+              <p className={`text-xs ${subText}`}>Store your personal notes, DPP links, formula sheets, and mistake notebook.</p>
+            </div>
+            <button onClick={() => setShowModal(!showModal)} className="px-4 py-2.5 rounded-xl bg-purple-600 text-xs font-bold text-white">+ Add Study Material</button>
+          </div>
+
+          {showModal && (
+            <form onSubmit={addMaterial} className={`p-5 rounded-2xl border ${cardBg} grid grid-cols-1 sm:grid-cols-4 gap-3`}>
+              <select value={form.subjectId} onChange={e => setForm({ ...form, subjectId: e.target.value })} className="px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs">
+                {SUBJECTS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+              <input placeholder="Material Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+              <input placeholder="Google Drive / PDF Link or Note" value={form.link} onChange={e => setForm({ ...form, link: e.target.value })} className="px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+              <button type="submit" className="px-4 py-2 rounded-xl bg-emerald-600 text-xs font-bold text-white">Save Material</button>
+            </form>
+          )}
+
+          {state.notes.length === 0 ? (
+            <div className={`p-10 rounded-2xl border ${cardBg} text-center`}>
+              <p className="text-sm font-bold">No custom materials added yet</p>
+              <p className={`text-xs mt-1 ${subText}`}>Click "+ Add Study Material" above to save PDF links, formulas, or handwritten note links.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {state.notes.map(n => (
+                <div key={n.id} className={`p-4 rounded-2xl border ${cardBg} flex justify-between items-start gap-3`}>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-purple-400">{SUBJECTS.find(s => s.id === n.subjectId)?.name} • {n.chapterName}</span>
+                    <h4 className="font-bold text-sm mt-1">{n.title}</h4>
+                    <p className={`text-xs mt-1 break-all ${subText}`}>{n.content}</p>
+                  </div>
+                  {n.content && n.content.startsWith('http') && (
+                    <a href={n.content} target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-lg bg-purple-600 text-xs font-bold text-white">Open</a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 6. REVISION CENTRE
+    // ============================================================================
+    function RevisionCentreView({ state, setState, cardBg, subText }) {
+      const [cardIdx, setCardIdx] = useState(0);
+      const cards = state.flashcards;
+      const cur = cards[cardIdx] || cards[0];
+
+      return (
+        <div className="space-y-6">
+          <div className={`p-6 rounded-2xl border ${cardBg}`}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-extrabold">Digital Revision Flashcards</h2>
+              <span className="text-xs font-bold text-purple-400">Card {cardIdx + 1} of {cards.length}</span>
+            </div>
+            {cur && (
+              <div className="p-5 rounded-2xl bg-[#0E0E14] border border-[#262635] space-y-3">
+                <div className="text-xs font-bold uppercase text-purple-400">{SUBJECTS.find(s => s.id === cur.subjectId)?.name} • {cur.chapterName}</div>
+                <h3 className="text-lg font-extrabold">{cur.concept}</h3>
+                <p className="text-sm text-zinc-300">{cur.explanation}</p>
+                <div className="p-3 rounded-xl bg-purple-950/30 border border-purple-500/30 text-xs font-mono text-purple-300">
+                  {cur.formulaOrSection}
+                </div>
+                <div className="text-xs text-amber-400 font-semibold">Practice Q: {cur.question}</div>
+              </div>
+            )}
+            <div className="flex justify-between items-center mt-4">
+              <button onClick={() => setCardIdx(i => (i - 1 + cards.length) % cards.length)} className="px-4 py-2 rounded-xl border border-[#262635] text-xs font-bold">← Previous</button>
+              <button
+                onClick={() => setState(p => ({ ...p, flashcards: p.flashcards.map((c, idx) => idx === cardIdx ? { ...c, revised: !c.revised } : c) }))}
+                className={`px-4 py-2 rounded-xl text-xs font-bold ${cur?.revised ? 'bg-emerald-500/20 text-emerald-400' : 'bg-purple-600 text-white'}`}
+              >
+                {cur?.revised ? '✓ Marked Revised' : 'Mark as Revised'}
+              </button>
+              <button onClick={() => setCardIdx(i => (i + 1) % cards.length)} className="px-4 py-2 rounded-xl border border-[#262635] text-xs font-bold">Next →</button>
+            </div>
+          </div>
+
+          <div className={`p-5 rounded-2xl border ${cardBg}`}>
+            <h3 className="font-bold text-base mb-3">Automated 1 / 7 / 30-Day Chapter Revision Queue</h3>
+            {state.revisions.length === 0 ? (
+              <p className={`text-xs ${subText}`}>Finish all lectures in any chapter to automatically populate your spaced-repetition schedule here.</p>
+            ) : (
+              <div className="space-y-2.5">
+                {state.revisions.map(r => (
+                  <div key={r.id} className="p-3.5 rounded-xl bg-[#0E0E14] border border-[#222230] flex flex-wrap justify-between items-center gap-3">
+                    <div>
+                      <div className="font-bold text-sm">{r.chapterName}</div>
+                      <div className="text-xs text-zinc-400">R1: {formatDateDDMMMYYYY(r.r1Date)} | R2: {formatDateDDMMMYYYY(r.r2Date)} | R3: {formatDateDDMMMYYYY(r.r3Date)}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 7. FOCUS TIMER
+    // ============================================================================
+    function FocusTimerView({ state, setState, cardBg, subText, todayISO }) {
+      const [minutes, setMinutes] = useState(50);
+      const [secondsLeft, setSecondsLeft] = useState(50 * 60);
+      const [running, setRunning] = useState(false);
+      const [subjectId, setSubjectId] = useState('accounting');
+
+      useEffect(() => {
+        if (!running) return;
+        const id = setInterval(() => {
+          setSecondsLeft(prev => {
+            if (prev <= 1) {
+              setRunning(false);
+              setState(p => ({ ...p, focusSessions: [...p.focusSessions, { id: `fs-${Date.now()}`, subjectId, minutes, date: todayISO }] }));
+              return minutes * 60;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        return () => clearInterval(id);
+      }, [running, minutes, subjectId, todayISO]);
+
+      const todayMins = state.focusSessions.filter(s => s.date === todayISO).reduce((a, b) => a + b.minutes, 0);
+      const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+      const ss = String(secondsLeft % 60).padStart(2, '0');
+
+      return (
+        <div className="max-w-xl mx-auto space-y-6">
+          <div className={`p-8 rounded-2xl border ${cardBg} text-center space-y-6`}>
+            <h2 className="text-xl font-extrabold">Pomodoro Focus Timer</h2>
+            <div className="flex justify-center gap-2">
+              {[25, 50, 90].map(m => (
+                <button
+                  key={m}
+                  onClick={() => { setRunning(false); setMinutes(m); setSecondsLeft(m * 60); }}
+                  className={`px-4 py-1.5 rounded-xl text-xs font-bold ${minutes === m ? 'bg-purple-600 text-white' : 'border border-[#262635]'}`}
+                >
+                  {m} Min
+                </button>
+              ))}
+            </div>
+            <select value={subjectId} onChange={e => setSubjectId(e.target.value)} className="px-4 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs font-semibold">
+              {SUBJECTS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+            <div className="text-6xl font-extrabold tracking-tight text-purple-400 font-mono">{mm}:{ss}</div>
+            <div className="flex justify-center gap-3">
+              <button onClick={() => setRunning(!running)} className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white">
+                {running ? 'Pause' : 'Start Focus'}
+              </button>
+              <button onClick={() => { setRunning(false); setSecondsLeft(minutes * 60); }} className="px-5 py-2.5 rounded-xl border border-[#262635] text-xs font-bold">
+                Reset
+              </button>
+            </div>
+            <p className={`text-xs ${subText}`}>Today's Focus Study: <strong className="text-emerald-400">{(todayMins / 60).toFixed(1)} hrs</strong> / {state.dailyTargetHours} hrs target</p>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 8. MTP & RTP (Lifelong Learner Resource Matrix)
+    // ============================================================================
+    function MtpRtpView({ state, setState, cardBg, subText }) {
+      const [subId, setSubId] = useState('accounting');
+      const [activeSlot, setActiveSlot] = useState(null);
+      const [marksInput, setMarksInput] = useState('');
+
+      const saveSlot = (e) => {
+        e.preventDefault();
+        if (!activeSlot) return;
+        setState(p => ({
+          ...p,
+          paperRecords: {
+            ...p.paperRecords,
+            [activeSlot]: { completed: true, marks: marksInput }
+          }
+        }));
+        setActiveSlot(null);
+        setMarksInput('');
+      };
+
+      return (
+        <div className="space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-extrabold">ICAI PYQ, RTP & MTP Tracker</h2>
+              <p className={`text-xs ${subText}`}>Extracted from lifelonglearner.in/free-resource • Click any paper to log completion & marks.</p>
+            </div>
+            <a href="https://www.lifelonglearner.in/free-resource" target="_blank" rel="noreferrer" className="px-4 py-2 rounded-xl bg-purple-600 text-xs font-bold text-white">
+              Open Lifelong Learner PDFs ↗
+            </a>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {SUBJECTS.map(s => (
+              <button key={s.id} onClick={() => setSubId(s.id)} className={`px-4 py-2 rounded-xl text-xs font-bold ${subId === s.id ? 'bg-purple-600 text-white' : 'border border-[#262635]'}`}>
+                {s.name}
+              </button>
+            ))}
+          </div>
+
+          {activeSlot && (
+            <form onSubmit={saveSlot} className={`p-4 rounded-2xl border ${cardBg} flex flex-wrap items-center gap-3`}>
+              <span className="text-xs font-bold text-purple-400">Logging: {activeSlot}</span>
+              <input value={marksInput} onChange={e => setMarksInput(e.target.value)} placeholder="Marks out of 100 (e.g. 68/100)" className="px-3 py-1.5 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs" />
+              <button type="submit" className="px-4 py-1.5 rounded-xl bg-emerald-600 text-xs font-bold text-white">Save Score</button>
+              <button type="button" onClick={() => setActiveSlot(null)} className="text-xs text-zinc-400">Cancel</button>
+            </form>
+          )}
+
+          <div className={`rounded-2xl border ${cardBg} overflow-x-auto`}>
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-[#262635] text-zinc-400">
+                  <th className="p-3.5">Attempt</th>
+                  {LIFELONG_TYPES.map(t => <th key={t} className="p-3.5">{t}</th>)}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#222230]">
+                {LIFELONG_SESSIONS.map(sess => (
+                  <tr key={sess}>
+                    <td className="p-3.5 font-bold">{sess}</td>
+                    {LIFELONG_TYPES.map(tp => {
+                      const key = `${subId}-${sess}-${tp}`;
+                      const rec = state.paperRecords[key];
+                      return (
+                        <td key={tp} className="p-3.5">
+                          <button
+                            onClick={() => { setActiveSlot(key); setMarksInput(rec?.marks || ''); }}
+                            className={`px-3 py-1.5 rounded-lg font-bold transition ${
+                              rec?.completed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-[#1D1D27] hover:bg-purple-600 text-zinc-300'
+                            }`}
+                          >
+                            {rec?.completed ? `✓ ${rec.marks || 'Done'}` : 'Log Paper'}
+                          </button>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 9. BACKLOG MANAGER
+    // ============================================================================
+    function BacklogManagerView({ state, cardBg, subText, todayISO, toggleLectureComplete }) {
+      const overdue = state.lectures.filter(l => l.status !== 'completed' && l.date !== 'Recorded' && l.date < todayISO);
+      return (
+        <div className="space-y-5">
+          <div>
+            <h2 className="text-xl font-extrabold">Backlog Manager ({overdue.length} Pending Past Lectures)</h2>
+            <p className={`text-xs ${subText}`}>Automatically detects scheduled lectures before {formatDateDDMMMYYYY(todayISO)} that are not yet completed.</p>
+          </div>
+          {overdue.length === 0 ? (
+            <div className={`p-10 rounded-2xl border ${cardBg} text-center`}>
+              <p className="text-base font-extrabold text-emerald-400">Zero Backlog! You are completely up to date.</p>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {overdue.map(l => (
+                <div key={l.id} className={`p-4 rounded-xl border ${cardBg} flex items-center justify-between gap-3`}>
+                  <div>
+                    <span className="text-[11px] font-bold uppercase text-rose-400">{SUBJECTS.find(s => s.id === l.subjectId)?.name} • Due {formatDateDDMMMYYYY(l.date)}</span>
+                    <div className="text-sm font-bold">{l.chapterName} — Lec {l.lectureNo} ({l.topic})</div>
+                  </div>
+                  <button onClick={() => toggleLectureComplete(l.id)} className="px-4 py-2 rounded-xl bg-purple-600 text-xs font-bold text-white">Clear Backlog</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 10. SIMPLE ANALYTICS
+    // ============================================================================
+    function AnalyticsView({ state, subjectStats, overallStats, cardBg, subText, todayISO }) {
+      const totalStudyMins = state.focusSessions.reduce((a, b) => a + b.minutes, 0);
+      return (
+        <div className="space-y-6">
+          <h2 className="text-xl font-extrabold">Preparation Analytics</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className={`p-5 rounded-2xl border ${cardBg}`}>
+              <div className="text-xs text-zinc-400">Overall Syllabus Completion</div>
+              <div className="text-2xl font-extrabold text-purple-400 mt-1">{overallStats.pct}%</div>
+            </div>
+            <div className={`p-5 rounded-2xl border ${cardBg}`}>
+              <div className="text-xs text-zinc-400">Total Logged Focus Hours</div>
+              <div className="text-2xl font-extrabold text-emerald-400 mt-1">{(totalStudyMins / 60).toFixed(1)} hrs</div>
+            </div>
+            <div className={`p-5 rounded-2xl border ${cardBg}`}>
+              <div className="text-xs text-zinc-400">MTP / RTP / PYQ Papers Logged</div>
+              <div className="text-2xl font-extrabold text-white mt-1">{Object.keys(state.paperRecords).length}</div>
+            </div>
+          </div>
+          <div className={`p-5 rounded-2xl border ${cardBg} space-y-4`}>
+            <h3 className="font-bold text-base">Subject-Wise Completion Breakdown</h3>
+            {SUBJECTS.map(s => (
+              <div key={s.id}>
+                <div className="flex justify-between text-xs font-bold mb-1">
+                  <span>{s.name}</span>
+                  <span>{subjectStats[s.id].pct}% ({subjectStats[s.id].compLecs}/{subjectStats[s.id].totalLecs} Lectures)</span>
+                </div>
+                <div className="w-full h-2.5 bg-[#222230] rounded-full overflow-hidden">
+                  <div className="h-full bg-purple-600" style={{ width: `${subjectStats[s.id].pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 11. SILENT STUDY MEET (Single Link • Host: CA. Beeresh)
+    // ============================================================================
+    function GoogleMeetRoomView({ state, setState, cardBg, subText }) {
+      const [editLink, setEditLink] = useState(state.meetLink || 'https://meet.google.com/landing');
+      const [copied, setCopied] = useState(false);
+
+      const copyLink = () => {
+        navigator.clipboard?.writeText(state.meetLink);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      };
+
+      return (
+        <div className="max-w-2xl mx-auto space-y-6">
+          <div className={`p-6 rounded-2xl border ${cardBg} space-y-5`}>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-600/20 text-purple-400">Host: CA. Beeresh</span>
+                <h2 className="text-xl font-extrabold mt-2">Silent Study Hall (Google Meet)</h2>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400">Camera ON • Mic OFF • Zero Chat</span>
+            </div>
+
+            <p className={`text-xs leading-relaxed ${subText}`}>
+              One unified silent study link for serious CA Foundation aspirants. No discussions or distractions — keep your microphone muted and study alongside peers.
+            </p>
+
+            <div className="p-4 rounded-xl bg-[#0B0B0F] border border-[#262635] flex flex-wrap items-center justify-between gap-3">
+              <div className="text-xs font-mono text-purple-400 truncate">{state.meetLink}</div>
+              <div className="flex gap-2">
+                <button onClick={copyLink} className="px-3.5 py-2 rounded-xl border border-[#262635] text-xs font-bold">
+                  {copied ? '✓ Copied' : 'Copy Link'}
+                </button>
+                <a href={state.meetLink} target="_blank" rel="noreferrer" className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white">
+                  Join Google Meet ↗
+                </a>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-[#262635] space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-xs uppercase text-zinc-400">Host Controls (CA. Beeresh)</h4>
+                <a href="https://meet.google.com/new" target="_blank" rel="noreferrer" className="text-xs font-bold text-purple-400 hover:underline">
+                  + Generate New Google Meet Link
+                </a>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={editLink}
+                  onChange={e => setEditLink(e.target.value)}
+                  placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                  className="flex-1 px-3.5 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs"
+                />
+                <button
+                  onClick={() => setState(p => ({ ...p, meetLink: editLink.trim() || 'https://meet.google.com/landing' }))}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 text-xs font-bold text-white"
+                >
+                  Save Link
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================================
+    // 12. SETTINGS & BACKUP
+    // ============================================================================
+    function SettingsView({ state, setState, cardBg, subText }) {
+      const exportBackup = () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `CA_Foundation_Sampurna_May2027_Backup.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      const importBackup = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            if (parsed && Array.isArray(parsed.lectures)) {
+              setState(parsed);
+              alert('Backup restored successfully!');
+            }
+          } catch {
+            alert('Invalid backup JSON file.');
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      return (
+        <div className="max-w-2xl mx-auto space-y-6">
+          <div className={`p-6 rounded-2xl border ${cardBg} space-y-4`}>
+            <h2 className="text-xl font-extrabold">Planner Settings & Backup</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold mb-1">ICAI Exam Date (May 2027)</label>
+                <input
+                  type="datetime-local"
+                  value={state.examDate.slice(0, 16)}
+                  onChange={e => setState(p => ({ ...p, examDate: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold mb-1">Daily Study Target (Hours)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="16"
+                  value={state.dailyTargetHours}
+                  onChange={e => setState(p => ({ ...p, dailyTargetHours: Number(e.target.value) || 8 }))}
+                  className="w-full px-3 py-2 rounded-xl bg-[#0B0B0F] border border-[#262635] text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-[#262635] flex flex-wrap gap-3">
+              <button onClick={exportBackup} className="px-4 py-2 rounded-xl bg-purple-600 text-xs font-bold text-white">Download JSON Backup</button>
+              <label className="px-4 py-2 rounded-xl border border-[#262635] text-xs font-bold cursor-pointer">
+                Restore JSON Backup
+                <input type="file" accept=".json" onChange={importBackup} className="hidden" />
+              </label>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
